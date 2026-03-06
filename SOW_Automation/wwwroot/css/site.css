@@ -868,37 +868,175 @@ button:focus-visible {
 .ey-loading-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(46, 46, 56, 0.5);
+  background: rgba(26, 26, 36, 0.75);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   display: none;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.35s ease;
 }
 
 .ey-loading-overlay.active {
   display: flex;
+  opacity: 1;
 }
 
-.ey-spinner {
+.ey-loading-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  animation: ey-loading-fade-in 0.5s ease forwards;
+}
+
+@keyframes ey-loading-fade-in {
+  0%   { opacity: 0; transform: translateY(12px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.ey-loading-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+  margin-bottom: 56px;
+}
+
+.ey-loading-brand .ey-logo-box {
   width: 48px;
   height: 48px;
-  border: 3px solid var(--color-base-neutral-200);
-  border-top: 3px solid var(--color-yellow-400);
-  border-radius: 50%;
-  animation: ey-spin 0.8s linear infinite;
+  font-size: var(--font-size-18);
 }
 
-@keyframes ey-spin {
-  0%   { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+.ey-loading-brand-text {
+  font-size: var(--font-size-24);
+  font-weight: var(--font-weight-regular);
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.05em;
+}
+
+.ey-rolling-blocks {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  height: 100px;
+  margin-bottom: 56px;
+  position: relative;
+}
+
+.ey-rolling-blocks .ey-block {
+  width: 36px;
+  height: 36px;
+  border-radius: 5px;
+  transform-origin: bottom right;
+  animation: ey-block-roll 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.ey-rolling-blocks .ey-block:nth-child(1) {
+  background: var(--color-yellow-400);
+  box-shadow: 0 0 16px rgba(255, 230, 0, 0.4);
+  animation-delay: 0s;
+}
+
+.ey-rolling-blocks .ey-block:nth-child(2) {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.2);
+  animation-delay: 0.2s;
+}
+
+.ey-rolling-blocks .ey-block:nth-child(3) {
+  background: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+  animation-delay: 0.4s;
+}
+
+@keyframes ey-block-roll {
+  0% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  15% {
+    transform: translateX(16px) rotate(90deg) translateY(-8px);
+    opacity: 1;
+  }
+  30% {
+    transform: translateX(38px) rotate(180deg);
+    opacity: 1;
+  }
+  45% {
+    transform: translateX(58px) rotate(270deg) translateY(-8px);
+    opacity: 1;
+  }
+  60% {
+    transform: translateX(78px) rotate(360deg);
+    opacity: 0.5;
+  }
+  75% {
+    transform: translateX(78px) rotate(360deg);
+    opacity: 0;
+  }
+  76% {
+    transform: translateX(-36px) rotate(0deg);
+    opacity: 0;
+  }
+  90% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.ey-loading-progress-bar {
+  width: 400px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.ey-loading-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-yellow-400), rgba(255, 230, 0, 0.5));
+  border-radius: var(--border-radius-sm);
+  width: 0%;
+  animation: ey-loading-progress 3s ease-in-out infinite;
+}
+
+@keyframes ey-loading-progress {
+  0%   { width: 0%; margin-left: 0; }
+  50%  { width: 60%; margin-left: 20%; }
+  100% { width: 0%; margin-left: 100%; }
 }
 
 .ey-loading-text {
-  color: var(--color-base-neutral-0);
-  font-size: var(--font-size-14);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: var(--font-size-28);
   font-weight: var(--font-weight-regular);
-  margin-top: var(--spacing-12);
+  margin-bottom: var(--spacing-12);
+  text-align: center;
+}
+
+.ey-loading-subtext {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-light);
+  text-align: center;
+  animation: ey-loading-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ey-loading-pulse {
+  0%, 100% { opacity: 0.4; }
+  50%      { opacity: 0.8; }
 }
 
 /* ============================================================
