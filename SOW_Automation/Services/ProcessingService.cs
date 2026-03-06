@@ -346,6 +346,9 @@ namespace SowAutomationTool.Services
                 // Replace **variableName** references across the entire document
                 ReplaceVariablesInDocument(body, matchedRows);
 
+                // Remove any unfilled [placeholder] brackets left in the document
+                RemoveRemainingBracketPlaceholders(body);
+
                 // Remove any remaining *{}* append placeholders
                 RemoveRemainingAppendPlaceholders(body);
 
@@ -1398,6 +1401,41 @@ namespace SowAutomationTool.Services
                 if (string.IsNullOrEmpty(original) || !original.Contains("*{}*")) continue;
                 textEl.Text = Regex.Replace(original, @"\s?\*\{\}\*", "");
                 textEl.Space = SpaceProcessingModeValues.Preserve;
+            }
+        }
+
+        /// <summary>
+        /// Removes any unfilled [placeholder] bracket text remaining in the document.
+        /// Skips escaped *[text]*, [NOTE TO DRAFT...], and [Optional...] patterns
+        /// which are handled separately.
+        /// </summary>
+        private void RemoveRemainingBracketPlaceholders(Body body)
+        {
+            // Matches both nested [outer [inner] text] and simple [placeholder] brackets,
+            // but excludes [NOTE TO DRAFT...] and [Optional...] which are handled elsewhere.
+            var nestedPattern = new Regex(@"\s?\[(?!NOTE TO DRAFT|Optional)(?:[^\[\]]*\[[^\[\]]*\])*[^\[\]]*\]", RegexOptions.IgnoreCase);
+            var simplePattern = new Regex(@"\s?\[(?!NOTE TO DRAFT|Optional)[^\[\]]+\]", RegexOptions.IgnoreCase);
+
+            foreach (var para in body.Descendants<Paragraph>().ToList())
+            {
+                var runs = para.Descendants<Run>().ToList();
+                if (runs.Count == 0) continue;
+
+                var fullText = string.Join("", runs.Select(r => r.InnerText));
+                if (string.IsNullOrEmpty(fullText) || !fullText.Contains('[')) continue;
+
+                // First strip escaped *[text]* markers so they don't match
+                var testText = Regex.Replace(fullText, @"\*\[[^\]]+\]\*", "");
+                if (!testText.Contains('[')) continue;
+
+                // Remove nested brackets first, then simple ones
+                if (nestedPattern.IsMatch(testText))
+                    RemovePatternAcrossRuns(runs, nestedPattern);
+                // Re-check after nested removal
+                fullText = string.Join("", runs.Select(r => r.InnerText));
+                testText = Regex.Replace(fullText, @"\*\[[^\]]+\]\*", "");
+                if (simplePattern.IsMatch(testText))
+                    RemovePatternAcrossRuns(runs, simplePattern);
             }
         }
 
