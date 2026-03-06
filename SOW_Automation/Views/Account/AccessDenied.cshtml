@@ -1,0 +1,32 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="ey-page-container" style="margin-top: var(--spacing-40); text-align: center;">
+    <div class="ey-card" style="max-width: 520px; margin: 0 auto;">
+        <div style="margin-bottom: var(--spacing-20);">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none"
+                 stroke="var(--accent-error-primary)" stroke-width="1.5"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
+            </svg>
+        </div>
+
+        <h2 style="font-size: var(--font-size-24); margin-bottom: var(--spacing-8);">Access Denied</h2>
+
+        <p style="color: var(--text-colors-default-secondary); margin-bottom: var(--spacing-4);">
+            Your account <strong>@User.FindFirst("preferred_username")?.Value</strong>
+            is not authorized to use this application.
+        </p>
+        <p style="color: var(--text-colors-default-tertiary); font-size: var(--font-size-12); margin-bottom: var(--spacing-24);">
+            Please contact your administrator to request access.
+        </p>
+
+        <a href="/MicrosoftIdentity/Account/SignOut"
+           class="btn-ey-primary"
+           style="text-decoration: none;">
+            Sign out
+        </a>
+    </div>
+</div>

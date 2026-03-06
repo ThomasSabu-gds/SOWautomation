@@ -1,0 +1,85 @@
+@{
+    ViewData["Title"] = "Upload Files";
+}
+
+<div class="ey-stepper">
+    <div class="ey-stepper-inner">
+        <div class="ey-stepper-step active">
+            <div class="ey-stepper-icon">1</div>
+            <div>
+                <div class="ey-stepper-label">Upload</div>
+                <div class="ey-stepper-sublabel">Select files</div>
+            </div>
+        </div>
+
+        <div class="ey-stepper-track"></div>
+
+        <div class="ey-stepper-step upcoming">
+            <div class="ey-stepper-icon">2</div>
+            <div>
+                <div class="ey-stepper-label">Review</div>
+                <div class="ey-stepper-sublabel">Fill answers</div>
+            </div>
+        </div>
+
+        <div class="ey-stepper-track"></div>
+
+        <div class="ey-stepper-step upcoming">
+            <div class="ey-stepper-icon">3</div>
+            <div>
+                <div class="ey-stepper-label">Generate</div>
+                <div class="ey-stepper-sublabel">Download SOW</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="ey-page-container" style="margin-top: var(--spacing-24);">
+    <h2 class="ey-h2">Upload Excel & Word Template</h2>
+
+    <div class="ey-card">
+        <form asp-action="Upload" method="post" enctype="multipart/form-data" id="uploadForm">
+            <div class="upload-section">
+                <label for="excelFile" class="ey-form-label">Excel File</label>
+                <input type="file" name="excelFile" id="excelFile" accept=".xlsx,.xls" required />
+                <div class="file-info" id="excelInfo"></div>
+            </div>
+
+            <div class="upload-section">
+                <label for="wordFile" class="ey-form-label">Word Template</label>
+                <input type="file" name="wordFile" id="wordFile" accept=".docx,.doc" required />
+                <div class="file-info" id="wordInfo"></div>
+            </div>
+
+            <div class="ey-submit-center">
+                <button type="submit" class="btn-ey-primary">Load Files</button>
+            </div>
+
+            <p class="ey-hint">Select your Excel file and Word template to begin</p>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.getElementById('excelFile').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+            var info = document.getElementById('excelInfo');
+            info.textContent = 'Selected: ' + file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
+            info.style.display = 'block';
+        }
+    });
+    document.getElementById('wordFile').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (file) {
+            var info = document.getElementById('wordInfo');
+            info.textContent = 'Selected: ' + file.name + ' (' + (file.size / 1024).toFixed(2) + ' KB)';
+            info.style.display = 'block';
+        }
+    });
+    document.getElementById('uploadForm').addEventListener('submit', function() {
+        document.getElementById('loadingOverlay').classList.add('active');
+    });
+</script>
+}

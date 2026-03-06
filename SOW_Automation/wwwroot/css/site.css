@@ -1,0 +1,1309 @@
+/* ============================================================
+   SOW Automation Tool - EY Motif Design System
+   Tokens sourced from @ey-xd/motif-design-tokens v11.1.0
+   ============================================================ */
+
+:root {
+  /* Motif Foundation Colors */
+  --color-base-neutral-0:    #FFF;
+  --color-base-neutral-25:   #F9F9FA;
+  --color-base-neutral-50:   #F3F3F5;
+  --color-base-neutral-75:   #E6E6E9;
+  --color-base-neutral-100:  #DEDEE2;
+  --color-base-neutral-150:  #D7D7DC;
+  --color-base-neutral-200:  #C3C3CB;
+  --color-base-neutral-300:  #AFAEBA;
+  --color-base-neutral-400:  #9897A6;
+  --color-base-neutral-500:  #7F7F91;
+  --color-base-neutral-600:  #656579;
+  --color-base-neutral-700:  #4E4E5D;
+  --color-base-neutral-750:  #4D4D5C;
+  --color-base-neutral-800:  #3F3F4C;
+  --color-base-neutral-900:  #2E2E38;
+  --color-base-neutral-950:  #23232F;
+  --color-base-neutral-1000: #1A1A24;
+  --color-yellow-400:        #FFE600;
+
+  /* Motif Light Theme Semantic Tokens */
+  --bg-colors-default-primary:   #FFF;
+  --bg-colors-default-secondary: #F3F3F5;
+  --bg-colors-default-tertiary:  #E6E6E9;
+  --bg-colors-default-extra-a:   #F9F9FA;
+  --bg-colors-default-extra-b:   #D7D7DC;
+  --bg-colors-hover-primary:     #F3F3F5;
+  --bg-colors-focus-primary:     #F3F3F5;
+  --bg-colors-focus-extra-a:     #FFF;
+
+  --border-colors-default-primary:   #E6E6E9;
+  --border-colors-default-secondary: #C3C3CB;
+  --border-colors-default-tertiary:  #7F7F91;
+  --border-colors-hover-extra-a:     #9897A6;
+
+  --text-colors-default-primary:   #2E2E38;
+  --text-colors-default-secondary: #656579;
+  --text-colors-default-tertiary:  #9897A6;
+  --text-colors-default-extra-a:   #FFF;
+
+  --icon-colors-default-primary:   #656579;
+  --icon-colors-default-secondary: #9897A6;
+
+  --alt-bg-colors-default-primary: #2E2E38;
+  --alt-text-colors-default-primary: #F9F9FA;
+
+  /* Motif Accent Tokens */
+  --accent-success-primary: #197335;
+  --accent-success-extra-a: #E7FCE8;
+  --accent-warning-primary: #975100;
+  --accent-warning-extra-a: #FCF5F0;
+  --accent-error-primary:   #C70117;
+  --accent-error-extra-a:   #FCF5F3;
+  --accent-info-primary:    #0F69AE;
+  --accent-info-extra-a:    #F4F7FC;
+
+  /* Motif Sizing & Spacing */
+  --spacing-2:  2px;
+  --spacing-4:  4px;
+  --spacing-6:  6px;
+  --spacing-8:  8px;
+  --spacing-10: 10px;
+  --spacing-12: 12px;
+  --spacing-14: 14px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+  --spacing-40: 40px;
+
+  --sizing-4:  4px;
+  --sizing-8:  8px;
+  --sizing-16: 16px;
+  --sizing-20: 20px;
+  --sizing-24: 24px;
+  --sizing-32: 32px;
+  --sizing-36: 36px;
+  --sizing-40: 40px;
+  --sizing-44: 44px;
+  --sizing-64: 64px;
+
+  /* Motif Border */
+  --border-width-thin:   1px;
+  --border-width-medium: 2px;
+  --border-radius-xs:  2px;
+  --border-radius-sm:  4px;
+  --border-radius-md:  6px;
+  --border-radius-lg:  8px;
+
+  /* Motif Shadows */
+  --box-shadow-01: 0 0 2px 0 rgb(13.7% 13.7% 18.4% / 0.06), 0 1px 2px 0 rgb(13.7% 13.7% 18.4% / 0.08);
+  --box-shadow-02: 0 1px 2px 0 rgb(13.7% 13.7% 18.4% / 0.06), 0 4px 8px 0 rgb(13.7% 13.7% 18.4% / 0.08);
+  --box-shadow-03: 0 2px 4px 0 rgb(13.7% 13.7% 18.4% / 0.06), 0 6px 12px 0 rgb(13.7% 13.7% 18.4% / 0.08);
+  --box-shadow-04: 0 2px 4px 0 rgb(13.7% 13.7% 18.4% / 0.06), 0 8px 16px 0 rgb(13.7% 13.7% 18.4% / 0.08);
+
+  /* Motif Typography */
+  --font-family-primary:   EYInterstate, 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Arial, sans-serif;
+  --font-family-secondary: 'Noto Sans', sans-serif;
+  --font-weight-light:   300;
+  --font-weight-regular: 400;
+  --font-weight-bold:    700;
+  --font-size-12: 0.857rem;
+  --font-size-14: 1rem;
+  --font-size-16: 1.143rem;
+  --font-size-18: 1.286rem;
+  --font-size-20: 1.42857rem;
+  --font-size-24: 1.714rem;
+  --font-size-28: 2rem;
+  --font-size-32: 2.286rem;
+  --line-height-18: 1.286rem;
+  --line-height-20: 1.42857rem;
+  --line-height-24: 1.714rem;
+  --line-height-28: 2rem;
+  --line-height-32: 2.286rem;
+  --line-height-40: 2.857rem;
+
+  /* Transition */
+  --transition-default: all 0.2s ease-in-out;
+}
+
+/* ============================================================
+   Base Reset & Typography
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 14px;
+  position: relative;
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: var(--bg-colors-default-secondary);
+  color: var(--text-colors-default-primary);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-light);
+  line-height: var(--line-height-20);
+  padding-bottom: var(--sizing-64);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-colors-default-primary);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.25;
+  margin-top: 0;
+}
+
+h1 { font-size: var(--font-size-32); line-height: var(--line-height-40); }
+h2 { font-size: var(--font-size-28); line-height: var(--line-height-32); }
+h3 { font-size: var(--font-size-24); }
+h4 { font-size: var(--font-size-18); }
+
+a {
+  color: var(--text-colors-default-primary);
+  text-decoration: none;
+  transition: var(--transition-default);
+}
+
+a:hover {
+  color: var(--text-colors-default-secondary);
+}
+
+/* ============================================================
+   Header / Navigation  (Motif Header pattern)
+   ============================================================ */
+
+.ey-nav {
+  background: var(--color-base-neutral-900);
+  padding: 0 var(--spacing-16);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  min-height: calc(var(--sizing-8) * 7);
+  position: relative;
+  z-index: 100;
+}
+
+.ey-nav::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--color-yellow-400);
+}
+
+.ey-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  text-decoration: none;
+  color: var(--alt-text-colors-default-primary);
+}
+
+.ey-logo-box {
+  width: var(--sizing-40);
+  height: var(--sizing-40);
+  background: var(--color-yellow-400);
+  color: var(--color-base-neutral-900);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+
+.ey-nav-title {
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-16);
+  color: var(--alt-text-colors-default-primary);
+  white-space: nowrap;
+}
+
+.ey-nav-links {
+  display: flex;
+  gap: 0;
+  align-items: center;
+  height: 100%;
+}
+
+.ey-nav-links a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-regular);
+  padding: 0 var(--spacing-16);
+  height: calc(var(--sizing-8) * 7);
+  display: flex;
+  align-items: center;
+  position: relative;
+  transition: var(--transition-default);
+}
+
+.ey-nav-links a:hover,
+.ey-nav-links a.active {
+  color: var(--color-base-neutral-0);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ey-nav-links a:hover::after,
+.ey-nav-links a.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-yellow-400);
+}
+
+/* User info in nav */
+.ey-nav-user {
+  color: var(--color-yellow-400);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-regular);
+  padding: 0 var(--spacing-12);
+  display: flex;
+  align-items: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+  margin-left: var(--spacing-8);
+  height: calc(var(--sizing-8) * 7);
+}
+
+.ey-nav-signout {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: var(--font-size-12) !important;
+  padding: 0 var(--spacing-12) !important;
+}
+
+.ey-nav-signout:hover {
+  color: var(--color-base-neutral-0) !important;
+}
+
+/* ============================================================
+   Main Content Area
+   ============================================================ */
+
+main {
+  background: var(--bg-colors-default-secondary);
+  min-height: calc(100vh - 136px);
+  padding: var(--spacing-24) var(--spacing-16);
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+/* ============================================================
+   Card  (Motif Card pattern)
+   ============================================================ */
+
+.ey-card {
+  background: var(--bg-colors-default-primary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-24);
+  box-shadow: var(--box-shadow-02);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+  transition: var(--transition-default);
+}
+
+.ey-card:hover {
+  box-shadow: var(--box-shadow-03);
+}
+
+/* ============================================================
+   Buttons  (Motif Button pattern)
+   ============================================================ */
+
+.btn-ey-primary {
+  background: var(--color-base-neutral-900);
+  color: var(--color-base-neutral-0);
+  border: var(--border-width-thin) solid var(--color-base-neutral-900);
+  padding: var(--spacing-12) var(--spacing-24);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-20);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: var(--transition-default);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.btn-ey-primary:hover {
+  background: var(--color-base-neutral-800);
+  border-color: var(--color-base-neutral-800);
+  color: var(--color-base-neutral-0);
+}
+
+.btn-ey-primary:active {
+  background: var(--color-base-neutral-950);
+}
+
+.btn-ey-primary:focus-visible {
+  outline: var(--border-width-medium) solid var(--accent-info-primary);
+  outline-offset: 2px;
+}
+
+.ey-btn-yellow {
+  background: var(--color-yellow-400);
+  color: var(--color-base-neutral-900);
+  border: var(--border-width-thin) solid var(--color-yellow-400);
+  padding: var(--spacing-12) var(--spacing-24);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-20);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-default);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.ey-btn-yellow:hover {
+  background: #E6CF00;
+  border-color: #E6CF00;
+}
+
+.ey-btn-yellow:active {
+  background: #CCBA00;
+}
+
+.ey-btn-yellow:focus-visible {
+  outline: var(--border-width-medium) solid var(--accent-info-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Form Controls  (Motif Input / Select / TextArea tokens)
+   ============================================================ */
+
+.ey-form-label {
+  display: block;
+  color: var(--text-colors-default-primary);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-light);
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-20);
+  margin-bottom: var(--spacing-6);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="file"],
+select,
+textarea {
+  border: var(--border-width-thin) solid var(--border-colors-default-secondary);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-10) var(--spacing-14);
+  color: var(--text-colors-default-primary);
+  background: var(--bg-colors-default-primary);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-light);
+  line-height: var(--line-height-20);
+  transition: var(--transition-default);
+  width: 100%;
+}
+
+input:hover,
+select:hover,
+textarea:hover {
+  border-color: var(--border-colors-hover-extra-a);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--accent-info-primary);
+  border-width: var(--border-width-medium);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-colors-default-secondary);
+  font-weight: var(--font-weight-light);
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23656579' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--spacing-12) center;
+  padding-right: var(--spacing-32);
+  cursor: pointer;
+}
+
+/* ============================================================
+   Upload Page  (Motif File Uploader pattern)
+   ============================================================ */
+
+.ey-page-container {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.ey-h2 {
+  color: var(--text-colors-default-primary);
+  font-size: var(--font-size-28);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-32);
+  margin-bottom: var(--spacing-8);
+  text-align: center;
+}
+
+.ey-card .upload-section {
+  margin-bottom: var(--spacing-20);
+}
+
+.ey-card .upload-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.ey-card label {
+  font-weight: var(--font-weight-light);
+  font-size: var(--font-size-14);
+  margin-bottom: var(--spacing-8);
+  color: var(--text-colors-default-primary);
+}
+
+input[type="file"] {
+  width: 100%;
+  padding: var(--spacing-16) var(--spacing-24);
+  border: var(--border-width-thin) dashed var(--border-colors-default-secondary);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  background: var(--bg-colors-default-extra-a);
+  transition: var(--transition-default);
+}
+
+input[type="file"]:hover {
+  border-color: var(--border-colors-hover-extra-a);
+  background: var(--bg-colors-hover-primary);
+}
+
+input[type="file"]:focus {
+  outline: none;
+  border-color: var(--accent-info-primary);
+  border-style: solid;
+  border-width: var(--border-width-medium);
+}
+
+input[type="file"]::file-selector-button {
+  background: var(--color-base-neutral-900);
+  color: var(--color-base-neutral-0);
+  border: none;
+  padding: var(--spacing-8) var(--spacing-20);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-12);
+  cursor: pointer;
+  margin-right: var(--spacing-12);
+  transition: var(--transition-default);
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: var(--color-base-neutral-800);
+}
+
+.file-info {
+  margin-top: var(--spacing-8);
+  padding: var(--spacing-10) var(--spacing-14);
+  background: var(--accent-info-extra-a);
+  border-radius: var(--border-radius-sm);
+  border-left: 3px solid var(--accent-info-primary);
+  font-size: var(--font-size-12);
+  color: var(--text-colors-default-secondary);
+  display: none;
+}
+
+.ey-submit-center {
+  text-align: center;
+  margin-top: var(--spacing-24);
+  padding-top: var(--spacing-20);
+  border-top: var(--border-width-thin) solid var(--border-colors-default-primary);
+}
+
+.ey-hint {
+  text-align: center;
+  color: var(--text-colors-default-tertiary);
+  font-size: var(--font-size-12);
+  margin-top: var(--spacing-12);
+}
+
+/* ============================================================
+   Breadcrumb  (Motif Breadcrumb pattern)
+   ============================================================ */
+
+.ey-breadcrumb {
+  background: var(--bg-colors-default-primary);
+  padding: var(--spacing-10) var(--spacing-16);
+  font-size: var(--font-size-12);
+  color: var(--text-colors-default-secondary);
+  margin-bottom: var(--spacing-16);
+  border-radius: var(--border-radius-sm);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+  box-shadow: var(--box-shadow-01);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.ey-breadcrumb a {
+  color: var(--text-colors-default-primary);
+  font-weight: var(--font-weight-regular);
+}
+
+.ey-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.ey-breadcrumb span {
+  color: var(--icon-colors-default-secondary);
+}
+
+.ey-breadcrumb span:last-child {
+  color: var(--text-colors-default-tertiary);
+  font-weight: var(--font-weight-regular);
+}
+
+/* ============================================================
+   Create / Table Page
+   ============================================================ */
+
+.ey-page-container--wide {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.ey-welcome-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--spacing-16);
+  background: var(--bg-colors-default-primary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-20) var(--spacing-24);
+  box-shadow: var(--box-shadow-02);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+  border-left: 4px solid var(--color-yellow-400);
+  margin-bottom: var(--spacing-16);
+}
+
+.ey-welcome-card .ey-welcome-text h2 {
+  margin: 0 0 var(--spacing-4) 0;
+  font-size: var(--font-size-20);
+  font-weight: var(--font-weight-regular);
+  color: var(--text-colors-default-primary);
+}
+
+.ey-welcome-card .ey-welcome-text p {
+  margin: 0;
+  font-size: var(--font-size-14);
+  color: var(--text-colors-default-secondary);
+  font-weight: var(--font-weight-light);
+  line-height: var(--line-height-20);
+}
+
+/* Section title */
+.ey-section-title {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.08em;
+  color: var(--text-colors-default-secondary);
+  text-transform: uppercase;
+  margin: 0;
+  padding: var(--spacing-14) var(--spacing-16) var(--spacing-10);
+  border-bottom: var(--border-width-thin) solid var(--border-colors-default-primary);
+}
+
+/* ============================================================
+   Data Table  (Motif Table tokens)
+   ============================================================ */
+
+.ey-table-card {
+  width: 100%;
+  padding: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  border-radius: var(--border-radius-lg);
+}
+
+.ey-table-card table {
+  width: 100%;
+  min-width: 1200px;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--bg-colors-default-primary);
+}
+
+.ey-table-card thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.ey-table-card th {
+  background: var(--color-base-neutral-900);
+  color: var(--alt-text-colors-default-primary);
+  font-weight: var(--font-weight-regular);
+  padding: var(--spacing-12) var(--spacing-24);
+  text-align: left;
+  font-size: var(--font-size-12);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 3px solid var(--color-yellow-400);
+  white-space: nowrap;
+}
+
+.ey-table-card th:first-child {
+  border-radius: var(--border-radius-lg) 0 0 0;
+}
+
+.ey-table-card th:last-child {
+  border-radius: 0 var(--border-radius-lg) 0 0;
+}
+
+.ey-table-card td {
+  padding: var(--spacing-16) var(--spacing-24);
+  border-bottom: var(--border-width-thin) solid var(--border-colors-default-primary);
+  color: var(--text-colors-default-primary);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-light);
+  line-height: var(--line-height-20);
+  vertical-align: top;
+}
+
+.ey-table-card tbody tr {
+  transition: var(--transition-default);
+}
+
+.ey-table-card tbody tr:hover td {
+  background: var(--bg-colors-hover-primary);
+}
+
+.ey-table-card tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Column widths */
+.ey-table-card td:first-child {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-colors-default-secondary);
+  text-align: center;
+  width: 50px;
+}
+
+.ey-table-card td:nth-child(2) {
+  font-weight: var(--font-weight-regular);
+  white-space: nowrap;
+  width: 100px;
+}
+
+.ey-table-card td:nth-child(3) {
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.ey-table-card td:nth-child(4) {
+  max-width: 250px;
+  color: var(--text-colors-default-secondary);
+  word-wrap: break-word;
+}
+
+.ey-table-card td:nth-child(5) {
+  max-width: 200px;
+  font-size: var(--font-size-12);
+  color: var(--text-colors-default-tertiary);
+  font-style: italic;
+  word-wrap: break-word;
+}
+
+.ey-table-card td:nth-child(6) {
+  min-width: 220px;
+  width: 240px;
+}
+
+/* Table form controls */
+.ey-table-card select {
+  width: 100%;
+  padding: var(--spacing-8) var(--spacing-32) var(--spacing-8) var(--spacing-12);
+  border: var(--border-width-thin) solid var(--border-colors-default-secondary);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-light);
+  min-height: var(--sizing-44);
+  background-color: var(--bg-colors-default-primary);
+  transition: var(--transition-default);
+}
+
+.ey-table-card select:hover {
+  border-color: var(--border-colors-hover-extra-a);
+}
+
+.ey-table-card select:focus {
+  border-color: var(--accent-info-primary);
+  border-width: var(--border-width-medium);
+  outline: none;
+}
+
+.ey-table-card textarea {
+  width: 100%;
+  padding: var(--spacing-8) var(--spacing-12);
+  border-radius: var(--border-radius-sm);
+  border: var(--border-width-thin) solid var(--border-colors-default-secondary);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-light);
+  min-height: 60px;
+  resize: vertical;
+  line-height: var(--line-height-20);
+  transition: var(--transition-default);
+}
+
+.ey-table-card textarea:hover {
+  border-color: var(--border-colors-hover-extra-a);
+}
+
+.ey-table-card textarea:focus {
+  border-color: var(--accent-info-primary);
+  border-width: var(--border-width-medium);
+  outline: none;
+}
+
+.ey-table-card input[type="text"] {
+  width: 100%;
+  padding: var(--spacing-8) var(--spacing-12);
+  border: var(--border-width-thin) solid var(--border-colors-default-secondary);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-14);
+  min-height: var(--sizing-44);
+}
+
+.ey-table-card .ey-submit-center {
+  padding: var(--spacing-20) var(--spacing-24);
+  border-top: var(--border-width-thin) solid var(--border-colors-default-primary);
+  background: var(--bg-colors-default-extra-a);
+}
+
+/* ============================================================
+   Footer  (Motif Footer pattern)
+   ============================================================ */
+
+.footer {
+  background: var(--color-base-neutral-900);
+  color: rgba(255, 255, 255, 0.7);
+  padding: var(--spacing-10) var(--spacing-32);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-light);
+  position: relative;
+  min-height: var(--sizing-64);
+  display: flex;
+  align-items: center;
+}
+
+.footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--color-yellow-400);
+}
+
+.footer .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.footer a {
+  color: var(--color-yellow-400);
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================================
+   Focus Ring  (Motif focus-ring tokens)
+   ============================================================ */
+
+.btn:focus,
+.btn:active:focus,
+.form-control:focus,
+.form-check-input:focus,
+button:focus-visible {
+  outline: var(--border-width-medium) solid var(--accent-info-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Loading / Spinner (Motif Progress Loader pattern)
+   ============================================================ */
+
+.ey-loading-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(46, 46, 56, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 9999;
+}
+
+.ey-loading-overlay.active {
+  display: flex;
+}
+
+.ey-spinner {
+  width: 48px;
+  height: 48px;
+  border: 3px solid var(--color-base-neutral-200);
+  border-top: 3px solid var(--color-yellow-400);
+  border-radius: 50%;
+  animation: ey-spin 0.8s linear infinite;
+}
+
+@keyframes ey-spin {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.ey-loading-text {
+  color: var(--color-base-neutral-0);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-regular);
+  margin-top: var(--spacing-12);
+}
+
+/* ============================================================
+   Progress Indicator / Stepper  (Motif progress-indicator pattern)
+   ============================================================ */
+
+.ey-stepper {
+  background: var(--bg-colors-default-primary);
+  border-bottom: var(--border-width-thin) solid var(--border-colors-default-primary);
+  padding: var(--spacing-16) var(--spacing-24);
+  box-shadow: var(--box-shadow-01);
+}
+
+.ey-stepper-inner {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.ey-stepper-step {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-10);
+  position: relative;
+  cursor: default;
+}
+
+.ey-stepper-step a {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-10);
+  text-decoration: none;
+  color: inherit;
+}
+
+.ey-stepper-step a:hover .ey-stepper-label {
+  text-decoration: underline;
+}
+
+.ey-stepper-icon {
+  width: var(--sizing-32);
+  height: var(--sizing-32);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-regular);
+  flex-shrink: 0;
+  transition: var(--transition-default);
+  border: var(--border-width-medium) solid transparent;
+}
+
+.ey-stepper-label {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-regular);
+  white-space: nowrap;
+  transition: var(--transition-default);
+}
+
+.ey-stepper-sublabel {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-light);
+  color: var(--text-colors-default-secondary);
+  white-space: nowrap;
+}
+
+/* Track / connector line */
+.ey-stepper-track {
+  flex: 0 0 80px;
+  height: 2px;
+  margin: 0 var(--spacing-12);
+  border-radius: var(--border-radius-xs);
+  background: var(--bg-colors-default-tertiary);
+  transition: var(--transition-default);
+}
+
+.ey-stepper-track.completed {
+  background: var(--color-base-neutral-900);
+}
+
+/* Step states */
+.ey-stepper-step.completed .ey-stepper-icon {
+  background: var(--color-base-neutral-900);
+  color: var(--color-base-neutral-0);
+}
+
+.ey-stepper-step.completed .ey-stepper-icon svg {
+  width: 14px;
+  height: 14px;
+  stroke: var(--color-base-neutral-0);
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ey-stepper-step.completed .ey-stepper-label {
+  color: var(--text-colors-default-primary);
+}
+
+.ey-stepper-step.active .ey-stepper-icon {
+  background: var(--color-yellow-400);
+  color: var(--color-base-neutral-900);
+  border-color: var(--color-base-neutral-900);
+  font-weight: var(--font-weight-bold);
+}
+
+.ey-stepper-step.active .ey-stepper-label {
+  color: var(--text-colors-default-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.ey-stepper-step.upcoming .ey-stepper-icon {
+  background: var(--bg-colors-default-secondary);
+  color: var(--text-colors-default-tertiary);
+  border-color: var(--border-colors-default-secondary);
+}
+
+.ey-stepper-step.upcoming .ey-stepper-label {
+  color: var(--text-colors-default-tertiary);
+}
+
+/* ============================================================
+   Enhanced Breadcrumb (with chevron separators)
+   ============================================================ */
+
+.ey-breadcrumb-chevron {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  width: 16px;
+  height: 16px;
+  color: var(--icon-colors-default-secondary);
+}
+
+.ey-breadcrumb-chevron svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ============================================================
+   Stats Bar  (progress summary cards)
+   ============================================================ */
+
+.ey-stats-bar {
+  display: flex;
+  gap: var(--spacing-12);
+  margin-bottom: var(--spacing-16);
+  flex-wrap: wrap;
+}
+
+.ey-stat-card {
+  background: var(--bg-colors-default-primary);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-14) var(--spacing-20);
+  flex: 1;
+  min-width: 150px;
+  box-shadow: var(--box-shadow-01);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  transition: var(--transition-default);
+}
+
+.ey-stat-card:hover {
+  box-shadow: var(--box-shadow-02);
+}
+
+.ey-stat-icon {
+  width: var(--sizing-40);
+  height: var(--sizing-40);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ey-stat-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
+.ey-stat-icon.total {
+  background: var(--accent-info-extra-a);
+}
+.ey-stat-icon.total svg { stroke: var(--accent-info-primary); }
+
+.ey-stat-icon.answered {
+  background: var(--accent-success-extra-a);
+}
+.ey-stat-icon.answered svg { stroke: var(--accent-success-primary); }
+
+.ey-stat-icon.remaining {
+  background: var(--accent-warning-extra-a);
+}
+.ey-stat-icon.remaining svg { stroke: var(--accent-warning-primary); }
+
+.ey-stat-content .stat-value {
+  font-size: var(--font-size-20);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-colors-default-primary);
+  line-height: 1.2;
+}
+
+.ey-stat-content .stat-label {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-light);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-colors-default-secondary);
+}
+
+/* ============================================================
+   Sticky Bottom Action Bar  (Motif Footer action pattern)
+   ============================================================ */
+
+.ey-sticky-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-colors-default-primary);
+  border-top: var(--border-width-thin) solid var(--border-colors-default-primary);
+  box-shadow: 0 -2px 8px rgba(46, 46, 56, 0.1);
+  padding: var(--spacing-12) var(--spacing-32);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ey-sticky-action-bar .ey-action-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+  font-size: var(--font-size-14);
+  color: var(--text-colors-default-secondary);
+  font-weight: var(--font-weight-light);
+}
+
+.ey-sticky-action-bar .ey-action-info strong {
+  color: var(--text-colors-default-primary);
+  font-weight: var(--font-weight-regular);
+}
+
+.ey-sticky-action-bar .ey-progress-mini {
+  width: 120px;
+  height: 4px;
+  background: var(--bg-colors-default-tertiary);
+  border-radius: var(--border-radius-xs);
+  overflow: hidden;
+}
+
+.ey-sticky-action-bar .ey-progress-mini-fill {
+  height: 100%;
+  background: var(--accent-success-primary);
+  border-radius: var(--border-radius-xs);
+  transition: width 0.3s ease;
+}
+
+.ey-sticky-action-bar .ey-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+/* Add bottom padding to main when sticky bar is present */
+body.has-sticky-bar {
+  padding-bottom: 140px;
+}
+
+body.has-sticky-bar .footer {
+  margin-bottom: 64px;
+}
+
+/* ============================================================
+   Placeholder Highlight in SOW Text Column
+   ============================================================ */
+
+.ph-mark {
+  transition: background-color 0.2s ease;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.ph-mark.ph-active {
+  background-color: var(--color-yellow-400);
+}
+
+/* Variable references in SOW text */
+.var-ref {
+  font-weight: var(--font-weight-bold);
+  color: var(--accent-info-primary);
+  transition: all 0.2s ease;
+}
+
+.var-ref.var-replaced {
+  color: var(--accent-success-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Append placeholder *{}* */
+.append-ph {
+  background-color: var(--bg-colors-default-tertiary);
+  font-style: italic;
+}
+
+/* Nested placeholder group */
+.nested-group {
+  margin-top: var(--spacing-6);
+}
+
+.nested-group label {
+  font-weight: var(--font-weight-regular) !important;
+  font-size: var(--font-size-12) !important;
+  color: var(--text-colors-default-secondary) !important;
+}
+
+.nested-group input[type="radio"] {
+  width: auto;
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .ey-nav {
+    padding: 0 var(--spacing-16);
+    min-height: auto;
+    flex-direction: column;
+    align-items: flex-start;
+    padding-top: var(--spacing-6);
+    padding-bottom: var(--spacing-6);
+  }
+
+  .ey-nav-links {
+    height: auto;
+    flex-wrap: wrap;
+  }
+
+  .ey-nav-links a {
+    height: var(--sizing-40);
+    padding: 0 var(--spacing-12);
+    font-size: var(--font-size-12);
+  }
+
+  main {
+    padding: var(--spacing-16);
+  }
+
+  .ey-welcome-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .ey-page-container {
+    max-width: 100%;
+  }
+
+  .ey-table-card table {
+    min-width: 900px;
+  }
+
+  .ey-stepper-inner {
+    gap: 0;
+  }
+
+  .ey-stepper-track {
+    flex: 0 0 40px;
+    margin: 0 var(--spacing-6);
+  }
+
+  .ey-stepper-sublabel {
+    display: none;
+  }
+
+  .ey-stats-bar {
+    flex-direction: column;
+  }
+
+  .ey-sticky-action-bar {
+    flex-direction: column;
+    gap: var(--spacing-8);
+    padding: var(--spacing-10) var(--spacing-16);
+  }
+
+  .ey-sticky-action-bar .ey-action-info {
+    font-size: var(--font-size-12);
+  }
+}

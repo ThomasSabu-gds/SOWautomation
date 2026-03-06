@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SOW Automation Tool</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="ey-nav">
+        <a class="ey-nav-brand" asp-controller="Sow" asp-action="Upload">
+            <span class="ey-logo-box">EY</span>
+            <span class="ey-nav-title">SOW Automation Tool</span>
+        </a>
+        <nav class="ey-nav-links">
+            <a asp-controller="Home" asp-action="Index">Home</a>
+            <a asp-controller="Sow" asp-action="Upload">Upload</a>
+            <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <span class="ey-nav-user">
+                    @(User.FindFirst("name")?.Value ?? User.FindFirst("preferred_username")?.Value ?? "User")
+                </span>
+                <a href="/MicrosoftIdentity/Account/SignOut" class="ey-nav-signout">Sign out</a>
+            }
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            @RenderBody()
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            &copy; @DateTime.Now.Year EY | Building a better working world
+        </div>
+    </footer>
+
+    <div class="ey-loading-overlay" id="loadingOverlay">
+        <div class="ey-spinner"></div>
+        <div class="ey-loading-text">Processing...</div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

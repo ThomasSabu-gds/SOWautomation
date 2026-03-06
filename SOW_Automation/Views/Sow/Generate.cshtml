@@ -1,0 +1,159 @@
+﻿@model List<SowAutomationTool.Models.SowUiRow>
+
+@{
+    ViewData["Title"] = "SOW_GENERATE";
+
+    // Download token
+    var token = ViewBag.Token as string ?? "";
+
+    // workflow id (used for going back to step-2)
+    var workflowId = ViewBag.WorkflowId as string ?? "";
+
+    var total = Model?.Count ?? 0;
+    var answered = Model?.Count(r => !string.IsNullOrWhiteSpace(r.UserAnswer)) ?? 0;
+    var remaining = total - answered;
+}
+
+<!-- Stepper: Step 3 active -->
+<div class="ey-stepper">
+    <div class="ey-stepper-inner">
+
+        <!-- Step 1: Upload -->
+        <div class="ey-stepper-step completed">
+            <a asp-controller="Sow" asp-action="Upload">
+                <div class="ey-stepper-icon">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="ey-stepper-label">Upload</div>
+                    <div class="ey-stepper-sublabel">Files loaded</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="ey-stepper-track completed"></div>
+
+        <!-- Step 2: Review (Create page) -->
+        <div class="ey-stepper-step completed">
+            <a asp-controller="Sow"
+               asp-action="Create"
+               asp-route-id="@workflowId">
+                <div class="ey-stepper-icon">
+                    <svg viewBox="0 0 24 24">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="ey-stepper-label">Review</div>
+                    <div class="ey-stepper-sublabel">Fill answers</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="ey-stepper-track completed"></div>
+
+        <!-- Step 3: Generate -->
+        <div class="ey-stepper-step active">
+            <div class="ey-stepper-icon">3</div>
+            <div>
+                <div class="ey-stepper-label">Generate</div>
+                <div class="ey-stepper-sublabel">Download SOW</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="ey-page-container ey-page-container--wide">
+
+    <!-- Welcome / Summary -->
+    <div class="ey-welcome-card">
+        <div class="ey-welcome-text">
+            <h2>Your SOW is ready</h2>
+            <p>Your SOW document has been generated. Please click below to download it.</p>
+
+            <p style="margin-top: 8px;">
+                <strong>@answered</strong> answered &nbsp;|&nbsp;
+                <strong>@remaining</strong> remaining &nbsp;|&nbsp;
+                <strong>@total</strong> total
+            </p>
+        </div>
+    </div>
+
+    <!-- Download Card -->
+    <div class="ey-card" style="padding: 24px;">
+        @if (string.IsNullOrWhiteSpace(token))
+        {
+            <div style="color: #b00020;">
+                Download token missing/expired.
+                Please go back to <a asp-controller="Sow" asp-action="Create" asp-route-id="@workflowId">Review</a>
+                and click <strong>Generate SOW</strong> again.
+            </div>
+        }
+        else
+        {
+            <a class="ey-btn-yellow"
+               asp-controller="Sow"
+               asp-action="Download"
+               asp-route-id="@token">
+                Download SOW
+            </a>
+
+            <a class="ey-btn-secondary"
+               style="margin-left: 10px;"
+               asp-controller="Sow"
+               asp-action="Create"
+               asp-route-id="@workflowId">
+                Back to Review
+            </a>
+        }
+    </div>
+
+    <!-- Answers Table -->
+    <div class="ey-card ey-table-card" style="margin-top:20px;">
+        <h3 class="ey-section-title">Your Answers</h3>
+
+        @if (Model == null || Model.Count == 0)
+        {
+            <div style="padding: 16px;">
+                No rows found. Please go back to Review.
+            </div>
+        }
+        else
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Clause</th>
+                        <th>Your Answer</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model)
+                    {
+                        <tr>
+                            <td>@row.RowNumber</td>
+                            <td>@row.ClauseNumber</td>
+                            <td>
+                                @(string.IsNullOrWhiteSpace(row.UserAnswer) ? "-" : row.UserAnswer)
+                                @if (row.PlaceholderAnswers != null && row.PlaceholderAnswers.Any(p => !string.IsNullOrWhiteSpace(p.Value)))
+                                {
+                                    <ul style="margin:4px 0 0; padding-left:16px; font-size:0.85em; color:#555;">
+                                        @foreach (var ph in row.PlaceholderAnswers.Where(p => !string.IsNullOrWhiteSpace(p.Value)))
+                                        {
+                                            <li><code>@ph.Key</code> &rarr; @ph.Value</li>
+                                        }
+                                    </ul>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+</div>

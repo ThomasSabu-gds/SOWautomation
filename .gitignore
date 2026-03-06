@@ -1,0 +1,77 @@
+############################
+# Visual Studio / IDE
+############################
+.vs/
+*.user
+*.suo
+*.cache
+*.tmp
+*.DotSettings
+.idea/
+
+############################
+# Build outputs (.NET)
+############################
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Dd]ebug/
+[Rr]elease/
+publish/
+*.dll
+*.exe
+*.pdb
+
+############################
+# NuGet
+############################
+project.assets.json
+project.nuget.cache
+*.nuget.g.props
+*.nuget.g.targets
+*.nuget.dgspec.json
+
+############################
+# ASP.NET Core
+############################
+*.log
+appsettings.*.local.json
+
+# EF / SQLite / Local DB
+*.db
+*.db-shm
+*.db-wal
+*.mdf
+*.ldf
+
+############################
+# Client-side vendor libs
+############################
+**/wwwroot/lib/
+
+############################
+# System files
+############################
+.DS_Store
+Thumbs.db
+Desktop.ini
+ehthumbs.db
+
+############################
+# Node / Front-end
+############################
+node_modules/
+package-lock.json
+
+############################
+# Misc
+############################
+*.bak
+*.swp
+*~
+/SOW_Automation/obj/Sow_Automation.csproj.nuget.g.props
+/SOW_Automation/obj/Debug/net8.0/ref/Sow_Automation.dll
+/SOW_Automation/obj/Debug/net8.0/refint/Sow_Automation.dll
+/SOW_Automation/obj/Debug/net8.0/scopedcss/bundle/Sow_Automation.styles.css
+/SOW_Automation/obj/Debug/net8.0/scopedcss/projectbundle/Sow_Automation.bundle.scp.css
+/SOW_Automation/obj/Debug/net8.0/apphost.exe

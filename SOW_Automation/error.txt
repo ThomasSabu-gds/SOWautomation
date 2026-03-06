@@ -1,0 +1,21 @@
+excel file
+
+55	Sch_B	*****B_Schedule***** 	Service Level Methodology - KPI/SLA driven performance management mechanism, with or without an impact on the fees		"Pls answer 'Yes' or 'No' on applicabilityIf Yes, pls update schedulle on Service Level Methodology in the SOW template"	If 'No', delete the entire schedule on Service Level Methodology, if Yes, do nothing		
+56 	table	A quantity, stated as a number of percentage points that is specified for a given Critical Service Level. The total of all Allocation of Pool Percentages shall not exceed the Pool Percentage Available for Allocation and the quantity of percentage points specified for any Critical Service Level shall not exceed the Maximum SLA Allocation Percentage.  [NOTE TO DRAFT:  Delete, unless Service Level Credits will apply.]	Allocation of Pool Percentage					Sch_B
+
+
+word file
+
+
+*****A_Schedule***** *****B_Schedule*****
+sudngsjkgdngisdjgd
+*****B_Schedule*****
+
+col1, col2
+Agreement	As defined in the preamble of the SOW.
+Allocation of Pool Percentage 	A quantity, stated as a number of percentage points that is specified for a given Critical Service Level. The total of all Allocation of Pool Percentages shall not exceed the Pool Percentage Available for Allocation and the quantity of percentage points specified for any Critical Service Level shall not exceed the Maximum SLA Allocation Percentage.  [NOTE TO DRAFT:  Delete, unless Service Level Credits will apply.]
+
+
+
+
+i selected no for schedule b but it was not deleted. also the *****A_Schedule***** remains in the final file. fix that. also the text was not replaced in the table 

@@ -1,0 +1,1088 @@
+@model List<SowAutomationTool.Models.SowUiRow>
+
+@{
+    ViewData["Title"] = "SOW_FORM";
+
+    // ✅ IMPORTANT: This makes asp-for generate names like rows[0].UserAnswer
+    // so it binds to List<SowUiRow> rows in your controller.
+    ViewData.TemplateInfo.HtmlFieldPrefix = "rows";
+
+    var totalCount = Model.Count;
+
+    // ✅ workflow id comes from controller: ViewBag.WorkflowId = workflowId;
+    var workflowId = ViewBag.WorkflowId as string ?? "";
+}
+
+<!-- Stepper: Step 2 active -->
+<div class="ey-stepper">
+    <div class="ey-stepper-inner">
+        <div class="ey-stepper-step completed">
+            <a asp-controller="Sow" asp-action="Upload">
+                <div class="ey-stepper-icon">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                </div>
+                <div>
+                    <div class="ey-stepper-label">Upload</div>
+                    <div class="ey-stepper-sublabel">Files loaded</div>
+                </div>
+            </a>
+        </div>
+
+        <div class="ey-stepper-track completed"></div>
+
+        <div class="ey-stepper-step active">
+            <div class="ey-stepper-icon">2</div>
+            <div>
+                <div class="ey-stepper-label">Review</div>
+                <div class="ey-stepper-sublabel">Fill answers</div>
+            </div>
+        </div>
+
+        <div class="ey-stepper-track"></div>
+
+        <div class="ey-stepper-step upcoming">
+            <div class="ey-stepper-icon">3</div>
+            <div>
+                <div class="ey-stepper-label">Generate</div>
+                <div class="ey-stepper-sublabel">Download SOW</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Breadcrumb -->
+<div style="max-width: 1280px; margin: var(--spacing-16) auto 0;">
+    <div class="ey-breadcrumb">
+        <a asp-controller="Home" asp-action="Index">Home</a>
+        <span class="ey-breadcrumb-chevron">
+            <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"></polyline></svg>
+        </span>
+        <a asp-controller="Sow" asp-action="Upload">Upload</a>
+        <span class="ey-breadcrumb-chevron">
+            <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"></polyline></svg>
+        </span>
+        <span>Fill Answers</span>
+    </div>
+</div>
+
+<div class="ey-page-container ey-page-container--wide">
+
+    <!-- Stats Bar -->
+    <div class="ey-stats-bar">
+        <div class="ey-stat-card">
+            <div class="ey-stat-icon total">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+            </div>
+            <div class="ey-stat-content">
+                <div class="stat-value" id="statTotal">@totalCount</div>
+                <div class="stat-label">Total Clauses</div>
+            </div>
+        </div>
+        <div class="ey-stat-card">
+            <div class="ey-stat-icon answered">
+                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="ey-stat-content">
+                <div class="stat-value" id="statAnswered">0</div>
+                <div class="stat-label">Answered</div>
+            </div>
+        </div>
+        <div class="ey-stat-card">
+            <div class="ey-stat-icon remaining">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <div class="ey-stat-content">
+                <div class="stat-value" id="statRemaining">@totalCount</div>
+                <div class="stat-label">Remaining</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Welcome banner -->
+    <div class="ey-welcome-card">
+        <div class="ey-welcome-text">
+            <h2>Review matched clauses</h2>
+            <p>
+                Complete the table below with your answers (Yes / No / N/A or custom text),
+                then generate your SOW document.
+            </p>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="ey-card ey-table-card">
+        <h3 class="ey-section-title">Your matched clauses</h3>
+
+        <!-- ✅ CHANGED: post to Create (POST) so it can redirect to Step-3 -->
+        <form id="sowGenerateForm" asp-controller="Sow" asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <!-- ✅ pass workflowId to controller -->
+            <input type="hidden" name="id" value="@workflowId" />
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Clause</th>
+                        <th>SOW Text</th>
+                        <th>Summary</th>
+                        <th>Tips</th>
+                        <th>User Answer</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @for (int i = 0; i < Model.Count; i++)
+                    {
+                        var tipsLower = Model[i].Tips?.ToLower() ?? "";
+                        var isYesNoQuestion = tipsLower.Contains("yes") || tipsLower.Contains("no");
+                        var phInfos = Model[i].GetPlaceholderInfos();
+                        var hasPlaceholders = phInfos.Count > 0;
+                        var hasAppendPh = Model[i].HasAppendPlaceholder;
+                        var options = Model[i].Options;
+                        <tr data-row-index="@i" data-clause="@Model[i].ClauseNumber" data-parents="@Model[i].ParentClauses">
+                            <td>
+                                @Model[i].RowNumber
+                                <input type="hidden" asp-for="@Model[i].RowNumber" />
+                            </td>
+
+                            <td>
+                                @Model[i].ClauseNumber
+                                <input type="hidden" asp-for="@Model[i].ClauseNumber" />
+                            </td>
+
+                            <td class="sow-text-cell" id="sow-text-@i" data-original-sow="@System.Net.WebUtility.HtmlEncode(Model[i].SowText ?? "")">
+                                @{
+                                    var rawSow = Model[i].SowText ?? "";
+                                    var sowHtml = "";
+                                    var isSectionMarker = Model[i].IsSectionMarker;
+                                    if (isSectionMarker)
+                                    {
+                                        sowHtml = "<strong>" + System.Net.WebUtility.HtmlEncode(Model[i].SectionMarkerName) + "</strong>";
+                                    }
+                                    else if (hasPlaceholders)
+                                    {
+                                        // Build HTML using position-based replacement (right to left)
+                                        var sb = new System.Text.StringBuilder(rawSow);
+                                        for (int pi = phInfos.Count - 1; pi >= 0; pi--)
+                                        {
+                                            var ph = phInfos[pi];
+                                            var encodedFull = System.Net.WebUtility.HtmlEncode(ph.FullText);
+                                            string replacement;
+                                            if (ph.IsNested)
+                                            {
+                                                var innerHtml = System.Net.WebUtility.HtmlEncode(ph.FullText);
+                                                foreach (var inner in ph.InnerPlaceholders)
+                                                {
+                                                    var encodedInner = System.Net.WebUtility.HtmlEncode(inner);
+                                                    innerHtml = innerHtml.Replace(encodedInner,
+                                                        $"<span class=\"ph-mark ph-inner\" data-ph=\"{System.Net.WebUtility.HtmlEncode(encodedInner)}\" data-row=\"{i}\">{encodedInner}</span>");
+                                                }
+                                                replacement = $"<span class=\"ph-mark ph-outer\" data-ph=\"{System.Net.WebUtility.HtmlEncode(encodedFull)}\" data-row=\"{i}\">{innerHtml}</span>";
+                                            }
+                                            else
+                                            {
+                                                replacement = $"<span class=\"ph-mark\" data-ph=\"{System.Net.WebUtility.HtmlEncode(encodedFull)}\" data-row=\"{i}\">{encodedFull}</span>";
+                                            }
+                                            sb.Remove(ph.StartIndex, ph.EndIndex - ph.StartIndex);
+                                            sb.Insert(ph.StartIndex, replacement);
+                                        }
+                                        // HTML-encode the non-placeholder parts by encoding full string
+                                        // then restoring the placeholder spans
+                                        // Actually, we need a different approach: encode segments between placeholders
+                                        sowHtml = "";
+                                        int cursor = 0;
+                                        foreach (var ph in phInfos)
+                                        {
+                                            // Encode text before this placeholder
+                                            if (ph.StartIndex > cursor)
+                                                sowHtml += System.Net.WebUtility.HtmlEncode(rawSow.Substring(cursor, ph.StartIndex - cursor));
+                                            // Build the span for this placeholder
+                                            var encodedFull2 = System.Net.WebUtility.HtmlEncode(ph.FullText);
+                                            if (ph.IsNested)
+                                            {
+                                                var innerHtml = encodedFull2;
+                                                foreach (var inner in ph.InnerPlaceholders)
+                                                {
+                                                    var encodedInner = System.Net.WebUtility.HtmlEncode(inner);
+                                                    innerHtml = innerHtml.Replace(encodedInner,
+                                                        $"<span class=\"ph-mark ph-inner\" data-ph=\"{encodedInner}\" data-row=\"{i}\">{encodedInner}</span>");
+                                                }
+                                                sowHtml += $"<span class=\"ph-mark ph-outer\" data-ph=\"{encodedFull2}\" data-row=\"{i}\">{innerHtml}</span>";
+                                            }
+                                            else
+                                            {
+                                                sowHtml += $"<span class=\"ph-mark\" data-ph=\"{encodedFull2}\" data-row=\"{i}\">{encodedFull2}</span>";
+                                            }
+                                            cursor = ph.EndIndex;
+                                        }
+                                        // Encode remaining text after last placeholder
+                                        if (cursor < rawSow.Length)
+                                            sowHtml += System.Net.WebUtility.HtmlEncode(rawSow.Substring(cursor));
+                                    }
+                                    else
+                                    {
+                                        sowHtml = System.Net.WebUtility.HtmlEncode(rawSow);
+                                    }
+                                    // Wrap **varname** references with spans for live replacement
+                                    sowHtml = System.Text.RegularExpressions.Regex.Replace(
+                                        sowHtml,
+                                        @"(<[^>]*>)|(\*\*(\w+)\*\*)",
+                                        m => {
+                                            if (m.Groups[1].Success) return m.Groups[1].Value;
+                                            return $"<span class=\"var-ref\" data-var=\"{m.Groups[3].Value}\">**{m.Groups[3].Value}**</span>";
+                                        });
+                                    // Highlight *{}* append placeholders
+                                    if (hasAppendPh)
+                                    {
+                                        sowHtml = sowHtml.Replace("*{}*",
+                                            "<span class=\"ph-mark append-ph\" data-row=\"" + i + "\">*{}*</span>");
+                                    }
+                                }
+                                @Html.Raw(sowHtml)
+                                <input type="hidden" asp-for="@Model[i].SowText" />
+                            </td>
+
+                            <td>
+                                @Model[i].SowSummary
+                                <input type="hidden" asp-for="@Model[i].SowSummary" />
+                            </td>
+
+                            <td>
+                                @{
+                                    var tipsHtml = System.Net.WebUtility.HtmlEncode(Model[i].Tips ?? "");
+                                    tipsHtml = tipsHtml.Replace("**", "<br />");
+                                }
+                                @Html.Raw(tipsHtml)
+                                <input type="hidden" asp-for="@Model[i].Tips" />
+                            </td>
+
+                            <input type="hidden" asp-for="@Model[i].VariableName" />
+                            <input type="hidden" asp-for="@Model[i].ParentClauses" />
+
+                            <td>
+                                @if (isSectionMarker)
+                                {
+                                    <select asp-for="@Model[i].UserAnswer" class="sow-answer">
+                                        <option value="">Select...</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                    </select>
+                                }
+                                else if (Model[i].HasHierarchicalTips && hasPlaceholders)
+                                {
+                                    var hTips = Model[i].GetHierarchicalTips();
+                                    var rootTip = hTips.FirstOrDefault(t => string.IsNullOrEmpty(t.ParentId));
+                                    var childTips = hTips.Where(t => !string.IsNullOrEmpty(t.ParentId)).ToList();
+
+                                    if (rootTip != null && rootTip.IsYesNo)
+                                    {
+                                        <select asp-for="@Model[i].UserAnswer"
+                                                class="sow-answer hier-toggle"
+                                                data-row-index="@i">
+                                            <option value="">Select...</option>
+                                            <option value="Yes">Yes</option>
+                                            <option value="No">No</option>
+                                            <option value="N/A">N/A</option>
+                                        </select>
+                                    }
+                                    else if (rootTip != null && rootTip.HasOptions)
+                                    {
+                                        <select asp-for="@Model[i].UserAnswer"
+                                                class="sow-answer hier-toggle"
+                                                data-row-index="@i">
+                                            <option value="">Select option...</option>
+                                            @foreach (var opt in rootTip.Options)
+                                            {
+                                                <option value="@opt.Value">@opt.Label</option>
+                                            }
+                                        </select>
+                                    }
+                                    else
+                                    {
+                                        <textarea asp-for="@Model[i].UserAnswer"
+                                                  class="sow-answer hier-toggle"
+                                                  data-row-index="@i"
+                                                  rows="2"
+                                                  placeholder="Enter your answer..."></textarea>
+                                    }
+
+                                    <div class="hier-children" id="hier-children-@i" style="display:none; margin-top:8px;">
+                                        @{ int hPhIdx = 0; }
+                                        @for (int ci = 0; ci < childTips.Count; ci++)
+                                        {
+                                            var child = childTips[ci];
+                                            var ph = child.PlaceholderIndex >= 0 && child.PlaceholderIndex < phInfos.Count
+                                                ? phInfos[child.PlaceholderIndex] : null;
+                                            <div class="hier-child-tip" style="margin-bottom:8px; padding:6px; border-left:3px solid var(--border-colors-default-primary);">
+                                                <div style="font-size:0.85em; color:var(--text-colors-default-secondary); margin-bottom:4px;">
+                                                    Tip @child.Id: @child.RawContent
+                                                </div>
+                                                @if (ph != null)
+                                                {
+                                                    if (child.HasOptions)
+                                                    {
+                                                        <select name="rows[@i].PlaceholderAnswers[@hPhIdx].Value"
+                                                                class="sow-answer hier-field ph-value-row-@i"
+                                                                data-ph="@ph.FullText" data-row="@i" disabled>
+                                                            <option value="">Select option...</option>
+                                                            @foreach (var opt in child.Options)
+                                                            {
+                                                                <option value="@opt.Value">@opt.Label</option>
+                                                            }
+                                                        </select>
+                                                        <input type="hidden" name="rows[@i].PlaceholderAnswers[@hPhIdx].Key"
+                                                               value="@ph.FullText" class="hier-field ph-key-row-@i" disabled />
+                                                    }
+                                                    else if (child.IsYesNo)
+                                                    {
+                                                        <select name="rows[@i].PlaceholderAnswers[@hPhIdx].Value"
+                                                                class="sow-answer hier-field ph-value-row-@i"
+                                                                data-ph="@ph.FullText" data-row="@i" disabled>
+                                                            <option value="">Select...</option>
+                                                            <option value="Yes">Yes</option>
+                                                            <option value="No">No</option>
+                                                            <option value="N/A">N/A</option>
+                                                        </select>
+                                                        <input type="hidden" name="rows[@i].PlaceholderAnswers[@hPhIdx].Key"
+                                                               value="@ph.FullText" class="hier-field ph-key-row-@i" disabled />
+                                                    }
+                                                    else
+                                                    {
+                                                        var hHint = "Replace " + ph.FullText.Trim('[', ']');
+                                                        <textarea name="rows[@i].PlaceholderAnswers[@hPhIdx].Value"
+                                                                  class="sow-answer hier-field ph-value-row-@i"
+                                                                  data-ph="@ph.FullText" data-row="@i"
+                                                                  rows="2" placeholder="@hHint" disabled></textarea>
+                                                        <input type="hidden" name="rows[@i].PlaceholderAnswers[@hPhIdx].Key"
+                                                               value="@ph.FullText" class="hier-field ph-key-row-@i" disabled />
+                                                    }
+                                                    hPhIdx++;
+                                                }
+                                            </div>
+                                        }
+                                        @if (hasAppendPh)
+                                        {
+                                            <div style="margin-top:6px;">
+                                                <textarea asp-for="@Model[i].AppendText" class="sow-answer hier-field append-field"
+                                                          data-row="@i" rows="2"
+                                                          placeholder="Add or append text (leave blank to remove *{}*)" disabled></textarea>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (hasAppendPh && !hasPlaceholders && isYesNoQuestion)
+                                {
+                                    <select asp-for="@Model[i].UserAnswer"
+                                            class="sow-answer append-toggle"
+                                            data-row-index="@i">
+                                        <option value="">Select...</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                        <option value="N/A">N/A</option>
+                                    </select>
+                                    <div class="append-input" id="append-@i" style="display:none; margin-top:8px;">
+                                        <textarea asp-for="@Model[i].AppendText"
+                                                  class="sow-answer append-field"
+                                                  data-row="@i"
+                                                  rows="2"
+                                                  placeholder="Add or append text (leave blank to remove *{}*)"
+                                                  disabled></textarea>
+                                    </div>
+                                }
+                                else if (hasAppendPh && !hasPlaceholders && options.Count > 0)
+                                {
+                                    <select asp-for="@Model[i].UserAnswer"
+                                            class="sow-answer append-toggle"
+                                            data-row-index="@i">
+                                        <option value="">Select option...</option>
+                                        @foreach (var opt in options)
+                                        {
+                                            <option value="@opt.Value">@opt.Label</option>
+                                        }
+                                    </select>
+                                    <div class="append-input" id="append-@i" style="display:none; margin-top:8px;">
+                                        <textarea asp-for="@Model[i].AppendText"
+                                                  class="sow-answer append-field"
+                                                  data-row="@i"
+                                                  rows="2"
+                                                  placeholder="Add or append text (leave blank to remove *{}*)"
+                                                  disabled></textarea>
+                                    </div>
+                                }
+                                else if (hasAppendPh && !hasPlaceholders)
+                                {
+                                    <textarea asp-for="@Model[i].AppendText"
+                                              class="sow-answer"
+                                              data-row="@i"
+                                              rows="2"
+                                              placeholder="Add or append text (leave blank to remove *{}*)"></textarea>
+                                    <input type="hidden" asp-for="@Model[i].UserAnswer" value="Yes" />
+                                }
+                                else if (hasPlaceholders && options.Count > 0)
+                                {
+                                    <select asp-for="@Model[i].UserAnswer"
+                                            class="sow-answer placeholder-toggle"
+                                            data-row-index="@i">
+                                        <option value="">Select option...</option>
+                                        @foreach (var opt in options)
+                                        {
+                                            <option value="@opt.Value">@opt.Label</option>
+                                        }
+                                    </select>
+                                    <div class="placeholder-inputs" id="placeholders-@i" style="display:none; margin-top:8px;">
+                                        @{ int phIdx1 = 0; }
+                                        @for (int pi = 0; pi < phInfos.Count; pi++)
+                                        {
+                                            var ph = phInfos[pi];
+                                            if (!ph.IsNested)
+                                            {
+                                                var hint1 = "Replace " + ph.FullText.Trim('[', ']');
+                                                <div style="margin-bottom:6px;">
+                                                    <input type="hidden" name="rows[@i].PlaceholderAnswers[@phIdx1].Key" value="@ph.FullText" class="placeholder-field ph-key-row-@i" disabled />
+                                                    <textarea name="rows[@i].PlaceholderAnswers[@phIdx1].Value" class="sow-answer placeholder-field ph-value-row-@i" rows="2" data-ph="@ph.FullText" data-row="@i" placeholder="@hint1" disabled></textarea>
+                                                </div>
+                                                phIdx1++;
+                                            }
+                                            else
+                                            {
+                                                var gid1 = $"nested-{i}-{pi}";
+                                                var fullHint1 = "Replace " + ph.FullText.Trim('[', ']');
+                                                <div class="nested-group" data-group-id="@gid1" style="margin-bottom:8px; border:1px solid var(--border-colors-default-primary); padding:8px; border-radius:4px;">
+                                                    <div style="margin-bottom:6px; font-size:0.85em;">
+                                                        <label style="margin-right:12px; cursor:pointer;"><input type="radio" name="@gid1-mode" value="full" checked class="nested-mode-radio" data-group-id="@gid1" data-row="@i" /> Full Replacement</label>
+                                                        <label style="cursor:pointer;"><input type="radio" name="@gid1-mode" value="custom" class="nested-mode-radio" data-group-id="@gid1" data-row="@i" /> Custom Replacement</label>
+                                                    </div>
+                                                    <div class="nested-full" id="@gid1-full">
+                                                        <input type="hidden" name="rows[@i].PlaceholderAnswers[@phIdx1].Key" value="@ph.FullText" class="placeholder-field nested-field ph-key-row-@i" disabled />
+                                                        <textarea name="rows[@i].PlaceholderAnswers[@phIdx1].Value" class="sow-answer placeholder-field nested-field ph-value-row-@i" rows="2" data-ph="@ph.FullText" data-row="@i" placeholder="@fullHint1" disabled></textarea>
+                                                    </div>
+                                                    @{ phIdx1++; }
+                                                    <div class="nested-custom" id="@gid1-custom" style="display:none;">
+                                                        @for (int inner = 0; inner < ph.InnerPlaceholders.Count; inner++)
+                                                        {
+                                                            var innerHint1 = "Replace " + ph.InnerPlaceholders[inner].Trim('[', ']');
+                                                            <div style="margin-bottom:4px;">
+                                                                <input type="hidden" name="rows[@i].PlaceholderAnswers[@phIdx1].Key" value="@ph.InnerPlaceholders[inner]" class="placeholder-field nested-field custom-required ph-key-row-@i" disabled />
+                                                                <textarea name="rows[@i].PlaceholderAnswers[@phIdx1].Value" class="sow-answer placeholder-field nested-field custom-required ph-value-row-@i" rows="2" data-ph="@ph.InnerPlaceholders[inner]" data-row="@i" placeholder="@innerHint1" disabled></textarea>
+                                                            </div>
+                                                            phIdx1++;
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        @if (hasAppendPh)
+                                        {
+                                            <div style="margin-top:6px;">
+                                                <textarea asp-for="@Model[i].AppendText" class="sow-answer placeholder-field append-field" data-row="@i" rows="2" placeholder="Add or append text (leave blank to remove *{}*)" disabled></textarea>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (hasPlaceholders && isYesNoQuestion)
+                                {
+                                    <select asp-for="@Model[i].UserAnswer"
+                                            class="sow-answer placeholder-toggle"
+                                            data-row-index="@i">
+                                        <option value="">Select...</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                        <option value="N/A">N/A</option>
+                                    </select>
+                                    <div class="placeholder-inputs" id="placeholders-@i" style="display:none; margin-top:8px;">
+                                        @{ int phIdx2 = 0; }
+                                        @for (int pi = 0; pi < phInfos.Count; pi++)
+                                        {
+                                            var ph = phInfos[pi];
+                                            if (!ph.IsNested)
+                                            {
+                                                var hint2 = "Replace " + ph.FullText.Trim('[', ']');
+                                                <div style="margin-bottom:6px;">
+                                                    <input type="hidden" name="rows[@i].PlaceholderAnswers[@phIdx2].Key" value="@ph.FullText" class="placeholder-field ph-key-row-@i" disabled />
+                                                    <textarea name="rows[@i].PlaceholderAnswers[@phIdx2].Value" class="sow-answer placeholder-field ph-value-row-@i" rows="2" data-ph="@ph.FullText" data-row="@i" placeholder="@hint2" disabled></textarea>
+                                                </div>
+                                                phIdx2++;
+                                            }
+                                            else
+                                            {
+                                                var gid2 = $"nested-{i}-{pi}";
+                                                var fullHint2 = "Replace " + ph.FullText.Trim('[', ']');
+                                                <div class="nested-group" data-group-id="@gid2" style="margin-bottom:8px; border:1px solid var(--border-colors-default-primary); padding:8px; border-radius:4px;">
+                                                    <div style="margin-bottom:6px; font-size:0.85em;">
+                                                        <label style="margin-right:12px; cursor:pointer;"><input type="radio" name="@gid2-mode" value="full" checked class="nested-mode-radio" data-group-id="@gid2" data-row="@i" /> Full Replacement</label>
+                                                        <label style="cursor:pointer;"><input type="radio" name="@gid2-mode" value="custom" class="nested-mode-radio" data-group-id="@gid2" data-row="@i" /> Custom Replacement</label>
+                                                    </div>
+                                                    <div class="nested-full" id="@gid2-full">
+                                                        <input type="hidden" name="rows[@i].PlaceholderAnswers[@phIdx2].Key" value="@ph.FullText" class="placeholder-field nested-field ph-key-row-@i" disabled />
+                                                        <textarea name="rows[@i].PlaceholderAnswers[@phIdx2].Value" class="sow-answer placeholder-field nested-field ph-value-row-@i" rows="2" data-ph="@ph.FullText" data-row="@i" placeholder="@fullHint2" disabled></textarea>
+                                                    </div>
+                                                    @{ phIdx2++; }
+                                                    <div class="nested-custom" id="@gid2-custom" style="display:none;">
+                                                        @for (int inner = 0; inner < ph.InnerPlaceholders.Count; inner++)
+                                                        {
+                                                            var innerHint2 = "Replace " + ph.InnerPlaceholders[inner].Trim('[', ']');
+                                                            <div style="margin-bottom:4px;">
+                                                                <input type="hidden" name="rows[@i].PlaceholderAnswers[@phIdx2].Key" value="@ph.InnerPlaceholders[inner]" class="placeholder-field nested-field custom-required ph-key-row-@i" disabled />
+                                                                <textarea name="rows[@i].PlaceholderAnswers[@phIdx2].Value" class="sow-answer placeholder-field nested-field custom-required ph-value-row-@i" rows="2" data-ph="@ph.InnerPlaceholders[inner]" data-row="@i" placeholder="@innerHint2" disabled></textarea>
+                                                            </div>
+                                                            phIdx2++;
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        @if (hasAppendPh)
+                                        {
+                                            <div style="margin-top:6px;">
+                                                <textarea asp-for="@Model[i].AppendText" class="sow-answer placeholder-field append-field" data-row="@i" rows="2" placeholder="Add or append text (leave blank to remove *{}*)" disabled></textarea>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (hasPlaceholders)
+                                {
+                                    <div class="placeholder-inputs" style="margin-top:4px;">
+                                        @{ int phIdx3 = 0; }
+                                        @for (int pi = 0; pi < phInfos.Count; pi++)
+                                        {
+                                            var ph = phInfos[pi];
+                                            if (!ph.IsNested)
+                                            {
+                                                var hint3 = "Replace " + ph.FullText.Trim('[', ']');
+                                                <div style="margin-bottom:6px;">
+                                                    <input type="hidden" name="rows[@i].PlaceholderAnswers[@phIdx3].Key" value="@ph.FullText" class="ph-key-row-@i" />
+                                                    <textarea name="rows[@i].PlaceholderAnswers[@phIdx3].Value" class="sow-answer ph-value-row-@i" rows="2" data-ph="@ph.FullText" data-row="@i" placeholder="@hint3"></textarea>
+                                                </div>
+                                                phIdx3++;
+                                            }
+                                            else
+                                            {
+                                                var gid3 = $"nested-{i}-{pi}";
+                                                var fullHint3 = "Replace " + ph.FullText.Trim('[', ']');
+                                                <div class="nested-group" data-group-id="@gid3" style="margin-bottom:8px; border:1px solid var(--border-colors-default-primary); padding:8px; border-radius:4px;">
+                                                    <div style="margin-bottom:6px; font-size:0.85em;">
+                                                        <label style="margin-right:12px; cursor:pointer;"><input type="radio" name="@gid3-mode" value="full" checked class="nested-mode-radio" data-group-id="@gid3" data-row="@i" /> Full Replacement</label>
+                                                        <label style="cursor:pointer;"><input type="radio" name="@gid3-mode" value="custom" class="nested-mode-radio" data-group-id="@gid3" data-row="@i" /> Custom Replacement</label>
+                                                    </div>
+                                                    <div class="nested-full" id="@gid3-full">
+                                                        <input type="hidden" name="rows[@i].PlaceholderAnswers[@phIdx3].Key" value="@ph.FullText" class="nested-field ph-key-row-@i" />
+                                                        <textarea name="rows[@i].PlaceholderAnswers[@phIdx3].Value" class="sow-answer nested-field ph-value-row-@i" rows="2" data-ph="@ph.FullText" data-row="@i" placeholder="@fullHint3"></textarea>
+                                                    </div>
+                                                    @{ phIdx3++; }
+                                                    <div class="nested-custom" id="@gid3-custom" style="display:none;">
+                                                        @for (int inner = 0; inner < ph.InnerPlaceholders.Count; inner++)
+                                                        {
+                                                            var innerHint3 = "Replace " + ph.InnerPlaceholders[inner].Trim('[', ']');
+                                                            <div style="margin-bottom:4px;">
+                                                                <input type="hidden" name="rows[@i].PlaceholderAnswers[@phIdx3].Key" value="@ph.InnerPlaceholders[inner]" class="nested-field ph-key-row-@i" disabled />
+                                                                <textarea name="rows[@i].PlaceholderAnswers[@phIdx3].Value" class="sow-answer nested-field custom-required ph-value-row-@i" rows="2" data-ph="@ph.InnerPlaceholders[inner]" data-row="@i" placeholder="@innerHint3" disabled></textarea>
+                                                            </div>
+                                                            phIdx3++;
+                                                        }
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                        @if (hasAppendPh)
+                                        {
+                                            <div style="margin-top:6px;">
+                                                <textarea asp-for="@Model[i].AppendText" class="sow-answer append-field" data-row="@i" rows="2" placeholder="Add or append text (leave blank to remove *{}*)"></textarea>
+                                            </div>
+                                        }
+                                    </div>
+                                    <input type="hidden" asp-for="@Model[i].UserAnswer" value="Yes" />
+                                }
+                                else if (isYesNoQuestion)
+                                {
+                                    <select asp-for="@Model[i].UserAnswer" class="sow-answer">
+                                        <option value="">Select...</option>
+                                        <option value="Yes">Yes</option>
+                                        <option value="No">No</option>
+                                        <option value="N/A">N/A</option>
+                                    </select>
+                                }
+                                else if (options.Count > 0)
+                                {
+                                    <select asp-for="@Model[i].UserAnswer" class="sow-answer">
+                                        <option value="">Select...</option>
+                                        @foreach (var opt in options)
+                                        {
+                                            <option value="@opt.Value">@opt.Label</option>
+                                        }
+                                    </select>
+                                }
+                                else
+                                {
+                                    <textarea asp-for="@Model[i].UserAnswer"
+                                              class="sow-answer"
+                                              rows="3"
+                                              placeholder="Enter your answer..."></textarea>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </form>
+    </div>
+</div>
+
+<!-- Sticky Bottom Action Bar -->
+<div class="ey-sticky-action-bar" id="stickyActionBar">
+    <div class="ey-action-info">
+        <span><strong id="barAnswered">0</strong> of <strong>@totalCount</strong> answered</span>
+        <div class="ey-progress-mini">
+            <div class="ey-progress-mini-fill" id="barProgressFill" style="width: 0%;"></div>
+        </div>
+    </div>
+    <div class="ey-action-buttons">
+        <button type="submit" form="sowGenerateForm" class="ey-btn-yellow">
+            Generate SOW
+        </button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.body.classList.add('has-sticky-bar');
+
+        function updateProgress() {
+            var inputs = document.querySelectorAll('.sow-answer');
+            var total = inputs.length;
+            var answered = 0;
+
+            inputs.forEach(function(el) {
+                var val = (el.value || '').trim();
+                if (val !== '') answered++;
+            });
+
+            var remaining = total - answered;
+            var pct = total > 0 ? Math.round((answered / total) * 100) : 0;
+
+            document.getElementById('statAnswered').textContent = answered;
+            document.getElementById('statRemaining').textContent = remaining;
+            document.getElementById('barAnswered').textContent = answered;
+            document.getElementById('barProgressFill').style.width = pct + '%';
+        }
+
+        document.querySelectorAll('.sow-answer').forEach(function(el) {
+            el.addEventListener('change', updateProgress);
+            el.addEventListener('input', updateProgress);
+        });
+
+        updateProgress();
+
+        function reindexPlaceholders(rowIdx) {
+            var keys = document.querySelectorAll('.ph-key-row-' + rowIdx + ':not(:disabled)');
+            var values = document.querySelectorAll('.ph-value-row-' + rowIdx + ':not(:disabled)');
+            keys.forEach(function(el, idx) {
+                el.name = 'rows[' + rowIdx + '].PlaceholderAnswers[' + idx + '].Key';
+            });
+            values.forEach(function(el, idx) {
+                el.name = 'rows[' + rowIdx + '].PlaceholderAnswers[' + idx + '].Value';
+            });
+        }
+
+        function updateNestedStates(container, enabled) {
+            container.querySelectorAll('.nested-group').forEach(function(group) {
+                var groupId = group.dataset.groupId;
+                var activeRadio = group.querySelector('.nested-mode-radio:checked');
+                var mode = activeRadio ? activeRadio.value : 'full';
+                var fullDiv = document.getElementById(groupId + '-full');
+                var customDiv = document.getElementById(groupId + '-custom');
+                if (fullDiv) {
+                    fullDiv.style.display = mode === 'full' ? '' : 'none';
+                    fullDiv.querySelectorAll('.nested-field').forEach(function(f) {
+                        f.disabled = !enabled || mode !== 'full';
+                    });
+                }
+                if (customDiv) {
+                    customDiv.style.display = mode === 'custom' ? '' : 'none';
+                    customDiv.querySelectorAll('.nested-field').forEach(function(f) {
+                        f.disabled = !enabled || mode !== 'custom';
+                    });
+                }
+            });
+        }
+
+        // Toggle hierarchical children when root answer changes
+        document.querySelectorAll('.hier-toggle').forEach(function(el) {
+            function handleHierToggle() {
+                var rowIndex = el.getAttribute('data-row-index');
+                var container = document.getElementById('hier-children-' + rowIndex);
+                if (!container) return;
+                var val = el.tagName === 'SELECT' ? el.value : (el.value || '').trim();
+                var show = val === 'Yes' || (val !== '' && val !== 'No' && val !== 'N/A');
+                if (show) {
+                    container.style.display = 'block';
+                    container.querySelectorAll('.hier-field').forEach(function(f) { f.disabled = false; });
+                } else {
+                    container.style.display = 'none';
+                    container.querySelectorAll('.hier-field').forEach(function(f) { f.disabled = true; });
+                    container.querySelectorAll('select.hier-field').forEach(function(f) { f.value = ''; });
+                    container.querySelectorAll('textarea.hier-field').forEach(function(f) { f.value = ''; });
+                }
+                reindexPlaceholders(rowIndex);
+                updateProgress();
+            }
+            el.addEventListener('change', handleHierToggle);
+            if (el.tagName === 'TEXTAREA') el.addEventListener('input', handleHierToggle);
+        });
+
+        // Toggle placeholder inputs when Yes/No/option is selected
+        function escHtml(s) {
+            var d = document.createElement('div');
+            d.appendChild(document.createTextNode(s));
+            return d.innerHTML;
+        }
+
+        document.querySelectorAll('.placeholder-toggle').forEach(function(select) {
+            select.addEventListener('change', function() {
+                var rowIndex = this.getAttribute('data-row-index');
+                var container = document.getElementById('placeholders-' + rowIndex);
+                var sowCell = document.getElementById('sow-text-' + rowIndex);
+                if (!container) return;
+
+                var val = this.value;
+                var isActive = val === 'Yes'
+                    || (val !== '' && val !== 'No' && val !== 'N/A');
+
+                // Parse [placeholder] patterns from the selected option value
+                var optionPlaceholders = [];
+                if (isActive && val !== 'Yes') {
+                    var phMatch;
+                    var phRegex = /\[([^\]]+)\]/g;
+                    while ((phMatch = phRegex.exec(val)) !== null) {
+                        optionPlaceholders.push(phMatch[0]);
+                    }
+                }
+
+                // Update SOW text cell to show the selected option text
+                if (sowCell) {
+                    var hiddenInput = sowCell.querySelector('input[type="hidden"]');
+                    var hiddenHtml = hiddenInput ? hiddenInput.outerHTML : '';
+                    if (isActive && val !== 'Yes') {
+                        var optHtml = escHtml(val);
+                        var phIdx = 0;
+                        optHtml = optHtml.replace(/\[([^\]]+)\]/g, function(m) {
+                            var idx = phIdx++;
+                            return '<span class="ph-mark" data-ph-idx="' + idx + '" data-row="' + rowIndex + '">' + escHtml(m) + '</span>';
+                        });
+                        sowCell.innerHTML = optHtml + hiddenHtml;
+                    } else if (!isActive) {
+                        var original = sowCell.dataset.originalSow || '';
+                        sowCell.innerHTML = escHtml(original) + hiddenHtml;
+                    }
+                }
+
+                // Disable and hide all static fields
+                container.querySelectorAll('.placeholder-field, .nested-field').forEach(function(f) { f.disabled = true; });
+                container.querySelectorAll('.placeholder-field, .nested-field, .nested-group').forEach(function(f) {
+                    if (f.closest('.dynamic-ph-inputs')) return;
+                    f.style.display = 'none';
+                });
+
+                // Clear any previous dynamic inputs
+                var dynContainer = container.querySelector('.dynamic-ph-inputs');
+                if (dynContainer) dynContainer.innerHTML = '';
+
+                if (optionPlaceholders.length > 0) {
+                    if (!dynContainer) {
+                        dynContainer = document.createElement('div');
+                        dynContainer.className = 'dynamic-ph-inputs';
+                        container.insertBefore(dynContainer, container.firstChild);
+                    }
+
+                    // Map option placeholders to actual SowText placeholders (round brackets)
+                    // e.g. option has [Insert scope limitations] but SowText has (Insert scope limitations)
+                    var originalSow = sowCell ? (sowCell.dataset.originalSow || '') : '';
+
+                    for (var p = 0; p < optionPlaceholders.length; p++) {
+                        var phKey = optionPlaceholders[p];
+                        var innerText = phKey.replace(/^\[|\]$/g, '');
+                        // Check if SowText uses round brackets for this placeholder
+                        var roundKey = '(' + innerText + ')';
+                        var actualKey = originalSow.indexOf(roundKey) >= 0 ? roundKey : phKey;
+                        var hint = 'Replace ' + innerText;
+                        var div = document.createElement('div');
+                        div.style.marginBottom = '6px';
+                        div.innerHTML =
+                            '<input type="hidden" name="rows[' + rowIndex + '].PlaceholderAnswers[' + p + '].Key" value="' + actualKey.replace(/"/g, '&quot;') + '" class="ph-key-row-' + rowIndex + '" />' +
+                            '<textarea name="rows[' + rowIndex + '].PlaceholderAnswers[' + p + '].Value" class="sow-answer ph-value-row-' + rowIndex + '" rows="2" data-ph-idx="' + p + '" data-row="' + rowIndex + '" placeholder="' + hint.replace(/"/g, '&quot;') + '"></textarea>';
+                        dynContainer.appendChild(div);
+                    }
+                    container.style.display = 'block';
+
+                    // Wire up focus highlight using index-based matching
+                    container.querySelectorAll('textarea[data-ph-idx]').forEach(function(ta) {
+                        ta.addEventListener('focusin', function() {
+                            document.querySelectorAll('.ph-mark.ph-active').forEach(function(el) { el.classList.remove('ph-active'); });
+                            var idx = ta.dataset.phIdx;
+                            var row = ta.dataset.row;
+                            var span = sowCell ? sowCell.querySelector('.ph-mark[data-ph-idx="' + idx + '"][data-row="' + row + '"]') : null;
+                            if (span) span.classList.add('ph-active');
+                        });
+                        ta.addEventListener('focusout', function() {
+                            document.querySelectorAll('.ph-mark.ph-active').forEach(function(el) { el.classList.remove('ph-active'); });
+                        });
+                    });
+                } else if (val === 'Yes') {
+                    // Restore static fields visibility and enable them
+                    container.querySelectorAll('.placeholder-field, .nested-field, .nested-group').forEach(function(f) { f.style.display = ''; });
+                    container.querySelectorAll('.placeholder-field:not(.nested-field)').forEach(function(f) { f.disabled = false; });
+                    updateNestedStates(container, true);
+                    container.style.display = 'block';
+                } else {
+                    container.style.display = 'none';
+                    container.querySelectorAll('.placeholder-field, .nested-field').forEach(function(f) { f.value = ''; f.style.display = ''; });
+                }
+                reindexPlaceholders(rowIndex);
+                updateProgress();
+            });
+        });
+
+        // Toggle append textbox when Yes/No/option is selected
+        document.querySelectorAll('.append-toggle').forEach(function(select) {
+            select.addEventListener('change', function() {
+                var rowIndex = this.getAttribute('data-row-index');
+                var container = document.getElementById('append-' + rowIndex);
+                if (!container) return;
+                var show = this.value === 'Yes'
+                    || (this.value !== '' && this.value !== 'No' && this.value !== 'N/A');
+                if (show) {
+                    container.style.display = 'block';
+                    container.querySelectorAll('.append-field').forEach(function(f) { f.disabled = false; });
+                } else {
+                    container.style.display = 'none';
+                    container.querySelectorAll('.append-field').forEach(function(f) { f.disabled = true; f.value = ''; });
+                }
+                updateProgress();
+            });
+        });
+
+        // Toggle nested full/custom mode
+        document.querySelectorAll('.nested-mode-radio').forEach(function(radio) {
+            radio.addEventListener('change', function() {
+                var groupId = this.dataset.groupId;
+                var rowIdx = this.dataset.row;
+                var mode = this.value;
+                var fullDiv = document.getElementById(groupId + '-full');
+                var customDiv = document.getElementById(groupId + '-custom');
+                if (mode === 'full') {
+                    if (fullDiv) { fullDiv.style.display = ''; fullDiv.querySelectorAll('.nested-field').forEach(function(f) { f.disabled = false; }); }
+                    if (customDiv) { customDiv.style.display = 'none'; customDiv.querySelectorAll('.nested-field').forEach(function(f) { f.disabled = true; f.value = ''; }); }
+                } else {
+                    if (fullDiv) { fullDiv.style.display = 'none'; fullDiv.querySelectorAll('.nested-field').forEach(function(f) { f.disabled = true; f.value = ''; }); }
+                    if (customDiv) { customDiv.style.display = ''; customDiv.querySelectorAll('.nested-field').forEach(function(f) { f.disabled = false; }); }
+                }
+                reindexPlaceholders(rowIdx);
+                updateProgress();
+                replaceVariablesInUI();
+            });
+        });
+
+        // Highlight placeholders in SOW text column when focusing on replacement textareas
+        document.addEventListener('focusin', function(e) {
+            var ta = e.target.closest('textarea[data-ph]');
+            if (!ta) return;
+            document.querySelectorAll('.ph-mark.ph-active').forEach(function(el) {
+                el.classList.remove('ph-active');
+            });
+            var ph = ta.dataset.ph;
+            var row = ta.dataset.row;
+            document.querySelectorAll('.ph-mark').forEach(function(el) {
+                if (el.dataset.ph === ph && el.dataset.row === row) {
+                    el.classList.add('ph-active');
+                }
+            });
+        });
+
+        document.addEventListener('focusout', function(e) {
+            if (e.target.closest('textarea[data-ph]')) {
+                document.querySelectorAll('.ph-mark.ph-active').forEach(function(el) {
+                    el.classList.remove('ph-active');
+                });
+            }
+        });
+
+        // Variable mappings: { varName: { rowIdx, placeholderKey } }
+        var varMappings = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.SelectMany((r, idx) => r.GetVariableMappings().Select(vm => new {
+                varName = vm.VariableName,
+                rowIdx = idx,
+                phKey = vm.PlaceholderKey
+            })).ToList()
+        ));
+
+        // Simple variable rows (VariableName set but no placeholder mappings)
+        var simpleVarRows = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.Select((r, idx) => new { varName = r.VariableName, rowIdx = idx })
+                 .Where(x => !string.IsNullOrWhiteSpace(x.varName) && !Model[x.rowIdx].GetVariableMappings().Any())
+                 .ToList()
+        ));
+
+        function getVariableValue(mapping) {
+            // Find the enabled placeholder textarea whose hidden key matches
+            var keys = document.querySelectorAll('.ph-key-row-' + mapping.rowIdx + ':not(:disabled)');
+            var values = document.querySelectorAll('.ph-value-row-' + mapping.rowIdx + ':not(:disabled)');
+            for (var k = 0; k < keys.length; k++) {
+                if (keys[k].value === mapping.phKey && values[k]) {
+                    return (values[k].value || '').trim();
+                }
+            }
+            // Also check non-classified placeholder fields in the same row
+            var allPh = document.querySelectorAll('textarea[data-ph="' + mapping.phKey.replace(/"/g, '\\"') + '"][data-row="' + mapping.rowIdx + '"]:not(:disabled)');
+            if (allPh.length > 0) return (allPh[0].value || '').trim();
+            return '';
+        }
+
+        function replaceVariablesInUI() {
+            // Handle mapped variables (from placeholder answers)
+            varMappings.forEach(function(m) {
+                var value = getVariableValue(m);
+                document.querySelectorAll('.var-ref[data-var="' + m.varName + '"]').forEach(function(span) {
+                    if (value) {
+                        span.textContent = value;
+                        span.classList.add('var-replaced');
+                    } else {
+                        span.textContent = '**' + m.varName + '**';
+                        span.classList.remove('var-replaced');
+                    }
+                });
+            });
+            // Handle simple variables (from UserAnswer)
+            simpleVarRows.forEach(function(sv) {
+                var answerEl = document.querySelector('[name="rows[' + sv.rowIdx + '].UserAnswer"]');
+                var value = answerEl ? (answerEl.value || '').trim() : '';
+                document.querySelectorAll('.var-ref[data-var="' + sv.varName + '"]').forEach(function(span) {
+                    if (value) {
+                        span.textContent = value;
+                        span.classList.add('var-replaced');
+                    } else {
+                        span.textContent = '**' + sv.varName + '**';
+                        span.classList.remove('var-replaced');
+                    }
+                });
+            });
+        }
+
+        // Attach listeners to all variable-defining rows
+        var varRowIndices = new Set();
+        varMappings.forEach(function(m) { varRowIndices.add(m.rowIdx); });
+        simpleVarRows.forEach(function(sv) { varRowIndices.add(sv.rowIdx); });
+
+        varRowIndices.forEach(function(rowIdx) {
+            var answerEl = document.querySelector('[name="rows[' + rowIdx + '].UserAnswer"]');
+            if (answerEl) {
+                answerEl.addEventListener('change', replaceVariablesInUI);
+                answerEl.addEventListener('input', replaceVariablesInUI);
+            }
+            // Also listen on placeholder textareas for this row
+            document.querySelectorAll('textarea[data-row="' + rowIdx + '"]').forEach(function(ta) {
+                ta.addEventListener('input', replaceVariablesInUI);
+                ta.addEventListener('change', replaceVariablesInUI);
+            });
+        });
+
+        replaceVariablesInUI();
+
+        // Parent-child clause logic
+        // Parent format: "6b" (show unless parent answered No) or "6b-1" (show only when parent picked option 1)
+        function parseParentList(str) {
+            if (!str) return [];
+            return str.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s.length > 0; });
+        }
+
+        function getClauseInfo(clause) {
+            var lc = clause.toLowerCase();
+            var tr = null;
+            document.querySelectorAll('tr[data-clause]').forEach(function(r) {
+                if (r.dataset.clause.toLowerCase() === lc) tr = r;
+            });
+            if (!tr) return { answer: '', optionPos: 0 };
+            var el = document.querySelector('[name="rows[' + tr.dataset.rowIndex + '].UserAnswer"]');
+            var answer = el ? (el.value || '').trim() : '';
+            var optionPos = 0;
+            if (el && el.tagName === 'SELECT') {
+                optionPos = el.selectedIndex; // 0 = placeholder, 1 = Option 1, 2 = Option 2, etc.
+            }
+            return { answer: answer, optionPos: optionPos };
+        }
+
+        function getClauseAnswer(clause) {
+            return getClauseInfo(clause).answer;
+        }
+
+        function evaluateParentDeps() {
+            document.querySelectorAll('tr[data-parents]').forEach(function(tr) {
+                var parents = parseParentList(tr.dataset.parents);
+                if (parents.length === 0) return;
+
+                var idx = tr.dataset.rowIndex;
+                var answerEl = document.querySelector('[name="rows[' + idx + '].UserAnswer"]');
+
+                var shouldHide = parents.every(function(p) {
+                    // Check for clause-option format: "6b-1" means parent clause "6b", required option position 1
+                    var dashMatch = p.match(/^(.+)-(\d+)$/);
+                    if (dashMatch) {
+                        var parentClause = dashMatch[1];
+                        var requiredPos = parseInt(dashMatch[2], 10);
+                        var info = getClauseInfo(parentClause);
+                        // Hide if parent has no answer yet, or picked a different option
+                        if (info.answer === '' || info.answer.toLowerCase() === 'no') return true;
+                        if (info.optionPos > 0 && info.optionPos !== requiredPos) return true;
+                        return false;
+                    } else {
+                        // Plain clause: hide if parent answered No
+                        return getClauseAnswer(p).toLowerCase() === 'no';
+                    }
+                });
+
+                if (shouldHide) {
+                    tr.style.display = 'none';
+                    if (answerEl) answerEl.value = 'No';
+                } else {
+                    tr.style.display = '';
+                    // Restore answer if it was auto-set to No
+                    if (answerEl && answerEl.value === 'No' && answerEl.tagName === 'SELECT') {
+                        // Don't reset - let user pick
+                    }
+                }
+            });
+            updateProgress();
+        }
+
+        document.querySelectorAll('.sow-answer').forEach(function(el) {
+            el.addEventListener('change', evaluateParentDeps);
+        });
+        evaluateParentDeps();
+
+        // Re-index all placeholder fields and validate custom-required before submit
+        document.getElementById('sowGenerateForm').addEventListener('submit', function(e) {
+            // Validate custom replacement fields: all enabled custom-required textareas must be filled
+            var emptyFields = [];
+            document.querySelectorAll('textarea.custom-required:not(:disabled)').forEach(function(ta) {
+                if (!ta.value.trim()) {
+                    emptyFields.push(ta);
+                    ta.style.borderColor = 'red';
+                } else {
+                    ta.style.borderColor = '';
+                }
+            });
+            if (emptyFields.length > 0) {
+                e.preventDefault();
+                emptyFields[0].focus();
+                alert('Please fill in all required custom replacement fields.');
+                return;
+            }
+
+            document.querySelectorAll('tr[data-row-index]').forEach(function(tr) {
+                reindexPlaceholders(tr.dataset.rowIndex);
+            });
+            var overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.classList.add('active');
+        });
+    </script>
+}
