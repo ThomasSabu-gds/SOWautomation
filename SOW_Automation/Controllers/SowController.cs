@@ -72,11 +72,15 @@ namespace SowAutomationTool.Controllers
                                       .OrderBy(r => r.RowNumber)
                                       .ToList();
 
+            // Extract table definition rows (e.g. tableA) for parent-based removal
+            var tableDefRows = excelRows.Where(r => r.IsTableRow).ToList();
+
             // ✅ Create workflow id & cache state
             var workflowId = Guid.NewGuid().ToString("N");
 
             _cache.Set(WfKey(workflowId, "word"), wordBytes, CacheTtl);
             _cache.Set(WfKey(workflowId, "rows"), matchedRows, CacheTtl);
+            _cache.Set(WfKey(workflowId, "tableDefs"), tableDefRows, CacheTtl);
 
             // ✅ Redirect to Step-2 Create (GET)
             return RedirectToAction(nameof(Create), new { id = workflowId });
@@ -114,8 +118,25 @@ namespace SowAutomationTool.Controllers
             if (!_cache.TryGetValue(WfKey(id, "word"), out byte[]? wordBytes) || wordBytes == null)
                 return RedirectToAction(nameof(Upload));
 
-            // Save updated answers
-            _cache.Set(WfKey(id, "rows"), rows ?? new List<SowUiRow>(), CacheTtl);
+            // Merge user answers into the original cached rows (preserves computed properties)
+            if (_cache.TryGetValue(WfKey(id, "rows"), out List<SowUiRow>? cachedRows) && cachedRows != null && rows != null)
+            {
+                var formLookup = rows.ToDictionary(r => r.RowNumber);
+                foreach (var cached in cachedRows)
+                {
+                    if (formLookup.TryGetValue(cached.RowNumber, out var formRow))
+                    {
+                        cached.UserAnswer = formRow.UserAnswer;
+                        cached.PlaceholderAnswers = formRow.PlaceholderAnswers;
+                        cached.AppendText = formRow.AppendText;
+                    }
+                }
+                _cache.Set(WfKey(id, "rows"), cachedRows, CacheTtl);
+            }
+            else
+            {
+                _cache.Set(WfKey(id, "rows"), rows ?? new List<SowUiRow>(), CacheTtl);
+            }
 
             // ✅ Create a download token and map token -> workflowId
             var token = Guid.NewGuid().ToString("N");
@@ -165,7 +186,33 @@ namespace SowAutomationTool.Controllers
             if (!_cache.TryGetValue(WfKey(workflowId, "rows"), out List<SowUiRow>? rows) || rows == null)
                 return RedirectToAction(nameof(Create), new { id = workflowId });
 
-            var finalDoc = _service.GenerateDocument(wordBytes, rows);
+            _cache.TryGetValue(WfKey(workflowId, "tableDefs"), out List<SowUiRow>? tableDefRows);
+
+            // Propagate "No" from parents to unanswered children for document generation
+            var noParents = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var r in rows)
+            {
+                if (r.UserAnswer?.Trim().Equals("No", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    if (!string.IsNullOrWhiteSpace(r.ClauseNumber))
+                        noParents.Add(r.ClauseNumber.Trim());
+                    if (r.IsSectionMarker && !string.IsNullOrWhiteSpace(r.SectionMarkerName))
+                        noParents.Add(r.SectionMarkerName.Trim());
+                }
+            }
+            if (noParents.Count > 0)
+            {
+                foreach (var r in rows)
+                {
+                    if (!string.IsNullOrWhiteSpace(r.UserAnswer)) continue;
+                    if (string.IsNullOrWhiteSpace(r.ParentClauses)) continue;
+                    var parents = r.ParentClauses.Split(',').Select(p => p.Trim());
+                    if (parents.Any(p => noParents.Contains(p)))
+                        r.UserAnswer = "No";
+                }
+            }
+
+            var finalDoc = _service.GenerateDocument(wordBytes, rows, tableDefRows ?? new List<SowUiRow>());
 
             return File(finalDoc,
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

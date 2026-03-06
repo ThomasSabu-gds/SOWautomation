@@ -103,7 +103,7 @@
         <div class="ey-welcome-text">
             <h2>Review matched clauses</h2>
             <p>
-                Complete the table below with your answers (Yes / No / N/A or custom text),
+                Complete the table below with your answers (Yes / No or custom text),
                 then generate your SOW document.
             </p>
         </div>
@@ -284,7 +284,7 @@
                                             <option value="">Select...</option>
                                             <option value="Yes">Yes</option>
                                             <option value="No">No</option>
-                                            <option value="N/A">N/A</option>
+
                                         </select>
                                     }
                                     else if (rootTip != null && rootTip.HasOptions)
@@ -343,7 +343,7 @@
                                                             <option value="">Select...</option>
                                                             <option value="Yes">Yes</option>
                                                             <option value="No">No</option>
-                                                            <option value="N/A">N/A</option>
+                
                                                         </select>
                                                         <input type="hidden" name="rows[@i].PlaceholderAnswers[@hPhIdx].Key"
                                                                value="@ph.FullText" class="hier-field ph-key-row-@i" disabled />
@@ -380,7 +380,7 @@
                                         <option value="">Select...</option>
                                         <option value="Yes">Yes</option>
                                         <option value="No">No</option>
-                                        <option value="N/A">N/A</option>
+
                                     </select>
                                     <div class="append-input" id="append-@i" style="display:none; margin-top:8px;">
                                         <textarea asp-for="@Model[i].AppendText"
@@ -418,7 +418,6 @@
                                               data-row="@i"
                                               rows="2"
                                               placeholder="Add or append text (leave blank to remove *{}*)"></textarea>
-                                    <input type="hidden" asp-for="@Model[i].UserAnswer" value="Yes" />
                                 }
                                 else if (hasPlaceholders && options.Count > 0)
                                 {
@@ -489,7 +488,7 @@
                                         <option value="">Select...</option>
                                         <option value="Yes">Yes</option>
                                         <option value="No">No</option>
-                                        <option value="N/A">N/A</option>
+
                                     </select>
                                     <div class="placeholder-inputs" id="placeholders-@i" style="display:none; margin-top:8px;">
                                         @{ int phIdx2 = 0; }
@@ -592,7 +591,6 @@
                                             </div>
                                         }
                                     </div>
-                                    <input type="hidden" asp-for="@Model[i].UserAnswer" value="Yes" />
                                 }
                                 else if (isYesNoQuestion)
                                 {
@@ -600,7 +598,7 @@
                                         <option value="">Select...</option>
                                         <option value="Yes">Yes</option>
                                         <option value="No">No</option>
-                                        <option value="N/A">N/A</option>
+
                                     </select>
                                 }
                                 else if (options.Count > 0)
@@ -632,7 +630,7 @@
 <!-- Sticky Bottom Action Bar -->
 <div class="ey-sticky-action-bar" id="stickyActionBar">
     <div class="ey-action-info">
-        <span><strong id="barAnswered">0</strong> of <strong>@totalCount</strong> answered</span>
+        <span><strong id="barAnswered">0</strong> of <strong id="barTotal">@totalCount</strong> answered</span>
         <div class="ey-progress-mini">
             <div class="ey-progress-mini-fill" id="barProgressFill" style="width: 0%;"></div>
         </div>
@@ -649,21 +647,27 @@
         document.body.classList.add('has-sticky-bar');
 
         function updateProgress() {
-            var inputs = document.querySelectorAll('.sow-answer');
-            var total = inputs.length;
+            var total = 0;
             var answered = 0;
 
-            inputs.forEach(function(el) {
-                var val = (el.value || '').trim();
-                if (val !== '') answered++;
+            document.querySelectorAll('tr[data-row-index]').forEach(function(tr) {
+                if (tr.style.display === 'none') return;
+                total++;
+                var idx = tr.dataset.rowIndex;
+                var el = document.querySelector('[name="rows[' + idx + '].UserAnswer"]');
+                if (el && (el.value || '').trim() !== '') {
+                    answered++;
+                }
             });
 
             var remaining = total - answered;
             var pct = total > 0 ? Math.round((answered / total) * 100) : 0;
 
+            document.getElementById('statTotal').textContent = total;
             document.getElementById('statAnswered').textContent = answered;
             document.getElementById('statRemaining').textContent = remaining;
             document.getElementById('barAnswered').textContent = answered;
+            document.getElementById('barTotal').textContent = total;
             document.getElementById('barProgressFill').style.width = pct + '%';
         }
 
@@ -1024,31 +1028,24 @@
                 var answerEl = document.querySelector('[name="rows[' + idx + '].UserAnswer"]');
 
                 var shouldHide = parents.every(function(p) {
-                    // Check for clause-option format: "6b-1" means parent clause "6b", required option position 1
                     var dashMatch = p.match(/^(.+)-(\d+)$/);
                     if (dashMatch) {
                         var parentClause = dashMatch[1];
                         var requiredPos = parseInt(dashMatch[2], 10);
                         var info = getClauseInfo(parentClause);
-                        // Hide if parent has no answer yet, or picked a different option
                         if (info.answer === '' || info.answer.toLowerCase() === 'no') return true;
                         if (info.optionPos > 0 && info.optionPos !== requiredPos) return true;
                         return false;
                     } else {
-                        // Plain clause: hide if parent answered No
-                        return getClauseAnswer(p).toLowerCase() === 'no';
+                        var ans = getClauseAnswer(p).toLowerCase();
+                        return ans === 'no';
                     }
                 });
 
                 if (shouldHide) {
                     tr.style.display = 'none';
-                    if (answerEl) answerEl.value = 'No';
                 } else {
                     tr.style.display = '';
-                    // Restore answer if it was auto-set to No
-                    if (answerEl && answerEl.value === 'No' && answerEl.tagName === 'SELECT') {
-                        // Don't reset - let user pick
-                    }
                 }
             });
             updateProgress();

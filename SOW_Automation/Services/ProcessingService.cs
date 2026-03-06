@@ -232,7 +232,8 @@ namespace SowAutomationTool.Services
 
         public byte[] GenerateDocument(
             byte[] wordData,
-            List<SowUiRow> matchedRows)
+            List<SowUiRow> matchedRows,
+            List<SowUiRow> tableDefRows)
         {
             using var ms = new MemoryStream();
             ms.Write(wordData);
@@ -244,6 +245,7 @@ namespace SowAutomationTool.Services
 
                 RemoveSchedulesByHeading(body, matchedRows);
                 RemoveSectionMarkers(body, matchedRows);
+                RemoveTableDefinitionsByParent(body, matchedRows, tableDefRows);
                 StripTableMarkerText(body);
 
                 var paragraphs = body.Descendants<Paragraph>().ToList();
@@ -355,6 +357,7 @@ namespace SowAutomationTool.Services
                 RemoveHighlightFormattingFromRuns(remainingHighlightedRuns);
 
                 RemoveNoteToDraftFromDocument(body);
+                StripAllRemainingMarkers(body);
                 doc.MainDocumentPart.Document.Save();
             }
 
@@ -603,6 +606,52 @@ namespace SowAutomationTool.Services
             }
         }
 
+        private static void StripAllRemainingMarkers(Body body)
+        {
+            var markerRegex = new Regex(@"(\*{5}[^*]+\*{5})|(&{5}[^&]+&{5})", RegexOptions.Compiled);
+
+            foreach (var para in body.Descendants<Paragraph>().ToList())
+            {
+                var fullText = para.InnerText;
+                if (string.IsNullOrEmpty(fullText)) continue;
+                if (!fullText.Contains("*****") && !fullText.Contains("&&&&&")) continue;
+
+                var cleaned = markerRegex.Replace(fullText, "").Trim();
+                if (string.IsNullOrWhiteSpace(cleaned))
+                {
+                    // Paragraph only contained markers -- remove it entirely
+                    if (!para.Ancestors<TableCell>().Any())
+                        para.Remove();
+                    else
+                    {
+                        // Inside a table cell: clear runs instead of removing paragraph
+                        foreach (var run in para.Descendants<Run>().ToList())
+                            run.Remove();
+                    }
+                }
+                else
+                {
+                    // Paragraph has other content mixed with markers -- strip from each run
+                    foreach (var run in para.Descendants<Run>().ToList())
+                    {
+                        var textEl = run.GetFirstChild<Text>();
+                        if (textEl == null) continue;
+                        var original = textEl.Text;
+                        if (string.IsNullOrEmpty(original)) continue;
+
+                        // Remove full marker sequences or standalone ***** / &&&&& fragments
+                        var replaced = markerRegex.Replace(original, "");
+                        replaced = replaced.Replace("*****", "").Replace("&&&&&", "");
+                        if (replaced != original)
+                        {
+                            textEl.Text = replaced;
+                            textEl.Space = SpaceProcessingModeValues.Preserve;
+                        }
+                    }
+                }
+            }
+        }
+
         private static void RemoveEmptyPageBreakParagraphs(Body body)
         {
             foreach (var para in body.Descendants<Paragraph>().ToList())
@@ -634,6 +683,170 @@ namespace SowAutomationTool.Services
                 if (hasPageBreak)
                     para.Remove();
             }
+        }
+
+        #endregion
+
+        #region Remove Table Definitions by Parent
+
+        private void RemoveTableDefinitionsByParent(
+            Body body,
+            List<SowUiRow> matchedRows,
+            List<SowUiRow> tableDefRows)
+        {
+            if (tableDefRows == null || tableDefRows.Count == 0) return;
+
+            var noParents = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var row in matchedRows)
+            {
+                var answer = row.UserAnswer?.Trim() ?? "";
+                if (!answer.Equals("No", StringComparison.OrdinalIgnoreCase)) continue;
+
+                if (!string.IsNullOrWhiteSpace(row.ClauseNumber))
+                    noParents.Add(row.ClauseNumber.Trim());
+
+                if (row.IsSectionMarker && !string.IsNullOrWhiteSpace(row.SectionMarkerName))
+                    noParents.Add(row.SectionMarkerName.Trim());
+            }
+
+            if (noParents.Count == 0) return;
+
+            var rowsToRemove = tableDefRows
+                .Where(tr =>
+                    !string.IsNullOrWhiteSpace(tr.ParentClauses) &&
+                    tr.ParentClauses.Split(',')
+                        .Select(p => p.Trim())
+                        .Any(p => noParents.Contains(p)))
+                .ToList();
+
+            if (rowsToRemove.Count == 0) return;
+
+            _logger.LogInformation(
+                "RemoveTableDefinitionsByParent: {Count} table rows to remove (noParents: {Parents})",
+                rowsToRemove.Count, string.Join(", ", noParents));
+
+            // Pre-index all Word definition table rows: (termNorm, defVisNorm, TableRow reference)
+            var wordTableIndex = new List<(string TermNorm, string DefNorm, TableRow Row)>();
+            foreach (var table in body.Descendants<Table>())
+            {
+                var rows = table.Descendants<TableRow>().ToList();
+                if (rows.Count < 5) continue; // skip small tables
+                foreach (var wordRow in rows)
+                {
+                    var cells = wordRow.Descendants<TableCell>().ToList();
+                    if (cells.Count < 2) continue;
+                    var termVis = GetVisibleText(cells[0]);
+                    var defVis = GetVisibleText(cells[1]);
+                    wordTableIndex.Add((Normalize(termVis), Normalize(defVis), wordRow));
+                }
+            }
+
+            _logger.LogInformation("Word table index built: {Count} rows across definition tables", wordTableIndex.Count);
+
+            foreach (var defRow in rowsToRemove)
+            {
+                var rawSummary = defRow.SowSummary ?? "";
+                var summaryClean = rawSummary.Trim().Trim(',', ' ', '\t').Trim();
+                var summaryNorm = Normalize(summaryClean);
+                var sowNorm = Normalize(defRow.SowText);
+
+                _logger.LogInformation(
+                    "Looking for: SummaryRaw='{Raw}', SummaryClean='{Clean}', SummaryNorm='{Norm}', SowNorm='{Sow}'",
+                    rawSummary.Length > 60 ? rawSummary.Substring(0, 60) : rawSummary,
+                    summaryClean,
+                    summaryNorm,
+                    sowNorm.Length > 80 ? sowNorm.Substring(0, 80) : sowNorm);
+
+                if (string.IsNullOrWhiteSpace(sowNorm) && string.IsNullOrWhiteSpace(summaryNorm))
+                    continue;
+
+                bool removed = false;
+
+                for (int wi = wordTableIndex.Count - 1; wi >= 0; wi--)
+                {
+                    var (termNorm, defNorm, wordRow) = wordTableIndex[wi];
+                    bool matched = false;
+
+                    // Strategy 1: exact term name match
+                    if (!string.IsNullOrWhiteSpace(summaryNorm) &&
+                        !string.IsNullOrWhiteSpace(termNorm) &&
+                        termNorm == summaryNorm)
+                    {
+                        matched = true;
+                    }
+
+                    // Strategy 2: term name contains or is contained by summary
+                    if (!matched && !string.IsNullOrWhiteSpace(summaryNorm) &&
+                        !string.IsNullOrWhiteSpace(termNorm) &&
+                        (termNorm.Contains(summaryNorm) || summaryNorm.Contains(termNorm)))
+                    {
+                        // Only accept if lengths are close enough to avoid false positives
+                        if (Math.Abs(termNorm.Length - summaryNorm.Length) <= 5)
+                            matched = true;
+                    }
+
+                    // Strategy 3: definition text match (using contains, handles field codes)
+                    if (!matched && !string.IsNullOrWhiteSpace(sowNorm) &&
+                        !string.IsNullOrWhiteSpace(defNorm))
+                    {
+                        // Use first 60 chars of sow text for robust matching
+                        var sowPrefix = sowNorm.Length > 60 ? sowNorm.Substring(0, 60) : sowNorm;
+                        var defPrefix = defNorm.Length > 60 ? defNorm.Substring(0, 60) : defNorm;
+                        if (defNorm.Contains(sowPrefix) || sowNorm.Contains(defPrefix))
+                            matched = true;
+                    }
+
+                    if (matched)
+                    {
+                        _logger.LogInformation(
+                            "REMOVING table row: Parent='{Parent}', Term='{Term}', WordTerm='{WordTerm}'",
+                            defRow.ParentClauses, summaryClean, termNorm);
+                        wordRow.Remove();
+                        wordTableIndex.RemoveAt(wi);
+                        removed = true;
+                        break;
+                    }
+                }
+
+                if (!removed)
+                {
+                    _logger.LogWarning(
+                        "NOT FOUND in document: Parent='{Parent}', SummaryNorm='{Summary}', SowNorm='{Sow}'",
+                        defRow.ParentClauses, summaryNorm,
+                        sowNorm.Length > 80 ? sowNorm.Substring(0, 80) : sowNorm);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Extracts only visible text from an OpenXML element, stripping Word field
+        /// instruction codes (e.g. REF, MERGEFORMAT cross-references) that pollute InnerText.
+        /// </summary>
+        private static string GetVisibleText(OpenXmlElement element)
+        {
+            var sb = new StringBuilder();
+            bool skipContent = false;
+
+            foreach (var descendant in element.Descendants())
+            {
+                if (descendant is FieldChar fc)
+                {
+                    var charType = fc.FieldCharType?.Value;
+                    if (charType == FieldCharValues.Begin)
+                        skipContent = true;
+                    else if (charType == FieldCharValues.Separate)
+                        skipContent = false;
+                    else if (charType == FieldCharValues.End)
+                        skipContent = false;
+                }
+                else if (!skipContent && descendant is Text t)
+                {
+                    sb.Append(t.Text);
+                }
+            }
+
+            return sb.ToString();
         }
 
         #endregion
