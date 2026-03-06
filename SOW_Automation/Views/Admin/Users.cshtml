@@ -1,0 +1,98 @@
+@model List<SowAutomationTool.Models.AppUser>
+
+@{
+    ViewData["Title"] = "Manage Users";
+}
+
+<div class="ey-page-container ey-page-container--wide">
+    <h2 class="ey-h2">Manage Users</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div style="background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; color: #2e7d32;">
+            @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div style="background: #fbe9e7; border-left: 4px solid #b00020; padding: 12px 16px; margin-bottom: 16px; border-radius: 4px; color: #b00020;">
+            @TempData["Error"]
+        </div>
+    }
+
+    <!-- Add User Form -->
+    <div class="ey-card" style="padding: 24px; margin-bottom: 24px;">
+        <h3 class="ey-section-title" style="margin-bottom: 16px;">Add New User</h3>
+        <form asp-controller="Admin" asp-action="AddUser" method="post" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;">
+            <div>
+                <label class="ey-form-label">Email</label>
+                <input type="email" name="email" required placeholder="user@ey.com"
+                       style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; width: 280px;" />
+            </div>
+            <div>
+                <label class="ey-form-label">Display Name</label>
+                <input type="text" name="displayName" placeholder="Full Name"
+                       style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; width: 200px;" />
+            </div>
+            <div>
+                <label class="ey-form-label">Role</label>
+                <select name="role" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; width: 120px;">
+                    <option value="User">User</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            <button type="submit" class="btn-ey-primary" style="height: 38px;">Add User</button>
+        </form>
+    </div>
+
+    <!-- Users Table -->
+    <div class="ey-card ey-table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Display Name</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th style="text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td>@user.Email</td>
+                        <td>@user.DisplayName</td>
+                        <td>
+                            <span style="background: @(user.Role == "Admin" ? "#ffe600" : "#e0e0e0"); padding: 2px 10px; border-radius: 12px; font-size: 0.85em; font-weight: 600;">
+                                @user.Role
+                            </span>
+                        </td>
+                        <td>
+                            <span style="color: @(user.IsActive ? "#2e7d32" : "#b00020"); font-weight: 600;">
+                                @(user.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </td>
+                        <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
+                        <td style="text-align: center;">
+                            <form asp-controller="Admin" asp-action="ToggleActive" method="post" style="display: inline;">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button type="submit" class="ey-btn-yellow" style="padding: 4px 12px; font-size: 0.85em;">
+                                    @(user.IsActive ? "Deactivate" : "Activate")
+                                </button>
+                            </form>
+                            <form asp-controller="Admin" asp-action="DeleteUser" method="post" style="display: inline; margin-left: 6px;"
+                                  onsubmit="return confirm('Delete user @user.Email?');">
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button type="submit" style="padding: 4px 12px; font-size: 0.85em; background: #b00020; color: #fff; border: none; border-radius: 4px; cursor: pointer;">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1306,4 +1306,320 @@ body.has-sticky-bar .footer {
   .ey-sticky-action-bar .ey-action-info {
     font-size: var(--font-size-12);
   }
+
+  .ey-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: var(--spacing-32) var(--spacing-16) !important;
+  }
+
+  .ey-hero-content { max-width: 100%; }
+  .ey-hero-title { font-size: var(--font-size-28); }
+  .ey-hero-actions { justify-content: center; }
+  .ey-hero-visual { display: none; }
+
+  .ey-steps-row {
+    flex-direction: column;
+    gap: var(--spacing-16);
+  }
+  .ey-step-connector { transform: rotate(90deg); }
+
+  .ey-features-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ============================================================
+   Home Page - Hero Section
+   ============================================================ */
+
+.ey-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-40);
+  background: var(--bg-colors-default-primary);
+  border-radius: var(--border-radius-lg);
+  padding: 56px 48px;
+  box-shadow: var(--box-shadow-03);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+  border-left: 5px solid var(--color-yellow-400);
+  margin-bottom: var(--spacing-32);
+}
+
+.ey-hero-content {
+  max-width: 560px;
+}
+
+.ey-hero-badge {
+  display: inline-block;
+  background: var(--color-base-neutral-900);
+  color: var(--color-yellow-400);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: var(--spacing-4) var(--spacing-14);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-20);
+}
+
+.ey-hero-title {
+  font-size: 2.5rem;
+  font-weight: var(--font-weight-light);
+  line-height: 1.2;
+  color: var(--text-colors-default-primary);
+  margin: 0 0 var(--spacing-16) 0;
+}
+
+.ey-hero-highlight {
+  color: var(--color-base-neutral-900);
+  font-weight: var(--font-weight-bold);
+  position: relative;
+}
+
+.ey-hero-highlight::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--color-yellow-400);
+  border-radius: 2px;
+}
+
+.ey-hero-subtitle {
+  font-size: var(--font-size-16);
+  line-height: 1.7;
+  color: var(--text-colors-default-secondary);
+  font-weight: var(--font-weight-light);
+  margin: 0 0 var(--spacing-32) 0;
+}
+
+.ey-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+}
+
+.ey-btn-lg {
+  padding: var(--spacing-14) var(--spacing-32) !important;
+  font-size: var(--font-size-16) !important;
+}
+
+/* Hero Visual - Document Graphic */
+.ey-hero-visual {
+  flex-shrink: 0;
+}
+
+.ey-hero-graphic {
+  position: relative;
+}
+
+.ey-hero-doc {
+  width: 200px;
+  background: var(--bg-colors-default-extra-a);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+  border-radius: var(--border-radius-lg);
+  padding: 24px 20px;
+  box-shadow: var(--box-shadow-04);
+  position: relative;
+}
+
+.ey-hero-doc-bar {
+  width: 60%;
+  height: 8px;
+  background: var(--color-base-neutral-900);
+  border-radius: var(--border-radius-xs);
+  margin-bottom: 20px;
+}
+
+.ey-hero-doc-line {
+  height: 6px;
+  background: var(--border-colors-default-primary);
+  border-radius: var(--border-radius-xs);
+  margin-bottom: 10px;
+}
+
+.ey-hero-doc-line.w80 { width: 80%; }
+.ey-hero-doc-line.w60 { width: 60%; }
+.ey-hero-doc-line.w90 { width: 90%; }
+.ey-hero-doc-line.w40 { width: 40%; }
+.ey-hero-doc-line.w70 { width: 70%; }
+
+.ey-hero-doc-check {
+  position: absolute;
+  bottom: -14px;
+  right: -14px;
+  width: 44px;
+  height: 44px;
+  background: var(--accent-success-extra-a);
+  border: 2px solid var(--accent-success-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--box-shadow-03);
+}
+
+.ey-hero-doc-check svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ============================================================
+   Home Page - How It Works Section
+   ============================================================ */
+
+.ey-how-it-works {
+  margin-bottom: var(--spacing-32);
+}
+
+.ey-section-heading {
+  text-align: center;
+  font-size: var(--font-size-24);
+  font-weight: var(--font-weight-regular);
+  color: var(--text-colors-default-primary);
+  margin-bottom: var(--spacing-32);
+  position: relative;
+}
+
+.ey-section-heading::after {
+  content: '';
+  display: block;
+  width: 48px;
+  height: 3px;
+  background: var(--color-yellow-400);
+  margin: var(--spacing-12) auto 0;
+  border-radius: 2px;
+}
+
+.ey-steps-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+}
+
+.ey-step-connector {
+  display: flex;
+  align-items: center;
+  padding-top: 52px;
+  margin: 0 var(--spacing-8);
+}
+
+.ey-step-card {
+  background: var(--bg-colors-default-primary);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-24) var(--spacing-20);
+  text-align: center;
+  flex: 1;
+  max-width: 280px;
+  box-shadow: var(--box-shadow-02);
+  transition: var(--transition-default);
+  position: relative;
+}
+
+.ey-step-card:hover {
+  box-shadow: var(--box-shadow-04);
+  transform: translateY(-2px);
+}
+
+.ey-step-number {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 24px;
+  background: var(--color-yellow-400);
+  color: var(--color-base-neutral-900);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ey-step-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--bg-colors-default-secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto var(--spacing-16);
+  color: var(--color-base-neutral-900);
+}
+
+.ey-step-card h3 {
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-regular);
+  margin-bottom: var(--spacing-8);
+  color: var(--text-colors-default-primary);
+}
+
+.ey-step-card p {
+  font-size: var(--font-size-14);
+  color: var(--text-colors-default-secondary);
+  font-weight: var(--font-weight-light);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ============================================================
+   Home Page - Features Grid
+   ============================================================ */
+
+.ey-features {
+  margin-bottom: var(--spacing-32);
+}
+
+.ey-features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-20);
+}
+
+.ey-feature-card {
+  background: var(--bg-colors-default-primary);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-24);
+  box-shadow: var(--box-shadow-01);
+  transition: var(--transition-default);
+}
+
+.ey-feature-card:hover {
+  box-shadow: var(--box-shadow-03);
+  border-color: var(--border-colors-default-secondary);
+}
+
+.ey-feature-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--spacing-16);
+}
+
+.ey-feature-card h4 {
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-regular);
+  margin-bottom: var(--spacing-8);
+  color: var(--text-colors-default-primary);
+}
+
+.ey-feature-card p {
+  font-size: var(--font-size-14);
+  color: var(--text-colors-default-secondary);
+  font-weight: var(--font-weight-light);
+  line-height: 1.6;
+  margin: 0;
 }

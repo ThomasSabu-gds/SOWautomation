@@ -9,13 +9,17 @@
 </head>
 <body>
     <header class="ey-nav">
-        <a class="ey-nav-brand" asp-controller="Sow" asp-action="Upload">
+        <a class="ey-nav-brand" asp-controller="Sow" asp-action="Create">
             <span class="ey-logo-box">EY</span>
             <span class="ey-nav-title">SOW Automation Tool</span>
         </a>
         <nav class="ey-nav-links">
             <a asp-controller="Home" asp-action="Index">Home</a>
-            <a asp-controller="Sow" asp-action="Upload">Upload</a>
+            <a asp-controller="Sow" asp-action="Create">New SOW</a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin" asp-action="Users">Manage Users</a>
+            }
             <a asp-controller="Home" asp-action="Privacy">Privacy</a>
 
             @if (User.Identity?.IsAuthenticated == true)

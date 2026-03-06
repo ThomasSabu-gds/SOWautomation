@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using SowAutomationTool.Services;
 
 namespace SowAutomationTool.Middleware
@@ -39,13 +40,21 @@ namespace SowAutomationTool.Middleware
             if (context.User.Identity?.IsAuthenticated == true)
             {
                 var email = context.User.FindFirst("preferred_username")?.Value
-                         ?? context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value
+                         ?? context.User.FindFirst(ClaimTypes.Email)?.Value
                          ?? context.User.FindFirst("email")?.Value;
 
-                if (!await authService.IsAuthorizedAsync(email))
+                var appUser = await authService.GetUserAsync(email);
+                if (appUser == null)
                 {
                     context.Response.Redirect("/Account/AccessDenied");
                     return;
+                }
+
+                // Inject the app role as a claim so controllers can check it
+                var identity = context.User.Identity as ClaimsIdentity;
+                if (identity != null && !context.User.IsInRole(appUser.Role))
+                {
+                    identity.AddClaim(new Claim(ClaimTypes.Role, appUser.Role));
                 }
             }
 

@@ -14,4 +14,9 @@
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="3.6.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Templates\Excel_Template.xlsx" />
+    <EmbeddedResource Include="Templates\Word_Template.docx" />
+  </ItemGroup>
+
 </Project>

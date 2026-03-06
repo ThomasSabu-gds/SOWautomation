@@ -18,6 +18,12 @@ builder.Services.AddMemoryCache();
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
 
+// Ensure ClaimTypes.Role is used for role checks (matches what the middleware injects)
+builder.Services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
+{
+    options.TokenValidationParameters.RoleClaimType = System.Security.Claims.ClaimTypes.Role;
+});
+
 // Global Authorization Policy (Require Authenticated User)
 builder.Services.AddControllersWithViews(options =>
 {
@@ -35,6 +41,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("UsersDb")));
 
 // DI Services
+builder.Services.AddSingleton<TemplateProvider>();
 builder.Services.AddScoped<ProcessingService>();
 builder.Services.AddScoped<UserAuthorizationService>();
 
@@ -46,22 +53,28 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.EnsureCreated();
 
-    if (!db.Users.Any())
+    var seedUsers = new[]
     {
-        var seedEmail = builder.Configuration["SeedUser:Email"] ?? "admin@ey.com";
-        var seedName = builder.Configuration["SeedUser:DisplayName"] ?? "Default Admin";
-        var seedRole = builder.Configuration["SeedUser:Role"] ?? "Admin";
+        new { Email = builder.Configuration["SeedUser:Email"] ?? "admin@ey.com",
+              Name = builder.Configuration["SeedUser:DisplayName"] ?? "Default Admin" },
+        new { Email = "christo.kl@gds.ey.com", Name = "Christo" },
+        new { Email = "Aravind.Sathishan@gds.ey.com", Name = "Aravind" }
+    };
 
-        db.Users.Add(new AppUser
+    foreach (var seed in seedUsers)
+    {
+        if (!db.Users.Any(u => u.Email.ToLower() == seed.Email.ToLower()))
         {
-            Email = seedEmail,
-            DisplayName = seedName,
-            Role = seedRole,
-            IsActive = true
-        });
-
-        db.SaveChanges();
+            db.Users.Add(new AppUser
+            {
+                Email = seed.Email,
+                DisplayName = seed.Name,
+                Role = "Admin",
+                IsActive = true
+            });
+        }
     }
+    db.SaveChanges();
 }
 
 // Pipeline
@@ -77,10 +90,11 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthentication();
-app.UseAuthorization();
 
-// ✅ Your custom middleware AFTER auth (so it can read user/claims)
+// Inject app role claims BEFORE authorization checks them
 app.UseMiddleware<UserAuthorizationMiddleware>();
+
+app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",

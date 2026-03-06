@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SowAutomationTool.Data;
+using SowAutomationTool.Models;
 
 namespace SowAutomationTool.Services
 {
@@ -19,6 +20,15 @@ namespace SowAutomationTool.Services
 
             return await _db.Users
                 .AnyAsync(u => u.Email.ToLower() == email.ToLower() && u.IsActive);
+        }
+
+        public async Task<AppUser?> GetUserAsync(string? email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return null;
+
+            return await _db.Users
+                .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower() && u.IsActive);
         }
     }
 }

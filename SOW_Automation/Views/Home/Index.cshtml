@@ -1,10 +1,140 @@
 @{
     ViewData["Title"] = "Home";
+    var userName = User.FindFirst("name")?.Value
+                ?? User.FindFirst("preferred_username")?.Value
+                ?? "there";
+    var firstName = userName.Split(' ')[0];
 }
 
-<div class="ey-page-container text-center">
-    <h2 class="ey-h2">SOW Automation Tool</h2>
-    <p class="ey-tagline" style="margin-bottom: 2rem;">Building a better working world</p>
-    <p class="ey-hint" style="margin-bottom: 1.5rem;">Upload your Excel and Word template to draft SOW documents.</p>
-    <a asp-controller="Sow" asp-action="Upload" class="btn-ey-primary">Get Started</a>
-</div>
+<!-- Hero Section -->
+<section class="ey-hero">
+    <div class="ey-hero-content">
+        <div class="ey-hero-badge">SOW Automation</div>
+        <h1 class="ey-hero-title">
+            Welcome back, <span class="ey-hero-highlight">@firstName</span>
+        </h1>
+        <p class="ey-hero-subtitle">
+            Streamline your Statement of Work process. Review clauses, fill responses,
+            and generate polished SOW documents in minutes — not hours.
+        </p>
+        <div class="ey-hero-actions">
+            <a asp-controller="Sow" asp-action="Create" class="ey-btn-yellow ey-btn-lg">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <line x1="9" y1="15" x2="15" y2="15"></line>
+                </svg>
+                Create New SOW
+            </a>
+        </div>
+    </div>
+    <div class="ey-hero-visual">
+        <div class="ey-hero-graphic">
+            <div class="ey-hero-doc">
+                <div class="ey-hero-doc-bar"></div>
+                <div class="ey-hero-doc-line w80"></div>
+                <div class="ey-hero-doc-line w60"></div>
+                <div class="ey-hero-doc-line w90"></div>
+                <div class="ey-hero-doc-line w40"></div>
+                <div class="ey-hero-doc-line w70"></div>
+                <div class="ey-hero-doc-check">
+                    <svg viewBox="0 0 24 24" width="32" height="32" stroke="#197335" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works -->
+<section class="ey-how-it-works">
+    <h2 class="ey-section-heading">How It Works</h2>
+    <div class="ey-steps-row">
+        <div class="ey-step-card">
+            <div class="ey-step-number">1</div>
+            <div class="ey-step-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            </div>
+            <h3>Review Clauses</h3>
+            <p>The tool automatically loads and matches SOW clauses from the template for your review.</p>
+        </div>
+        <div class="ey-step-connector">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="var(--color-base-neutral-300)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+        </div>
+        <div class="ey-step-card">
+            <div class="ey-step-number">2</div>
+            <div class="ey-step-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 11 12 14 22 4"></polyline>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+            </div>
+            <h3>Fill Responses</h3>
+            <p>Select options, fill placeholders, and provide your answers for each clause.</p>
+        </div>
+        <div class="ey-step-connector">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="var(--color-base-neutral-300)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+        </div>
+        <div class="ey-step-card">
+            <div class="ey-step-number">3</div>
+            <div class="ey-step-icon">
+                <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+            </div>
+            <h3>Download SOW</h3>
+            <p>Generate and download a finalized Word document ready for stakeholder review.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Features Grid -->
+<section class="ey-features">
+    <div class="ey-features-grid">
+        <div class="ey-feature-card">
+            <div class="ey-feature-icon" style="background: var(--accent-info-extra-a);">
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="var(--accent-info-primary)" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+            </div>
+            <h4>Save Time</h4>
+            <p>Reduce SOW drafting from hours to minutes with automated clause matching and document generation.</p>
+        </div>
+        <div class="ey-feature-card">
+            <div class="ey-feature-icon" style="background: var(--accent-success-extra-a);">
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="var(--accent-success-primary)" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+            </div>
+            <h4>Ensure Accuracy</h4>
+            <p>Template-driven approach ensures consistency and reduces manual errors across all SOW documents.</p>
+        </div>
+        <div class="ey-feature-card">
+            <div class="ey-feature-icon" style="background: var(--accent-warning-extra-a);">
+                <svg viewBox="0 0 24 24" width="22" height="22" stroke="var(--accent-warning-primary)" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <h4>Collaborate</h4>
+            <p>Role-based access allows admins to manage users and teams to work together seamlessly.</p>
+        </div>
+    </div>
+</section>
