@@ -80,20 +80,48 @@
         </div>
     </div>
 
-    <!-- Welcome banner -->
-    <div class="ey-welcome-card">
-        <div class="ey-welcome-text">
-            <h2>Review matched clauses</h2>
+    <!-- Welcome Hero -->
+    <div class="ey-review-hero">
+        <div class="ey-review-hero-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+        </div>
+        <div class="ey-review-hero-text">
+            <div class="ey-review-hero-badge">Step 1 of 2</div>
+            <h2>Review &amp; Fill Responses</h2>
             <p>
-                Complete the table below with your answers (Yes / No or custom text),
-                then generate your SOW document.
+                Review each matched clause below and provide your answers. Select Yes / No,
+                choose from available options, or enter custom text. Once complete, generate your SOW document.
             </p>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="ey-card" style="margin-bottom: var(--spacing-16); padding: var(--spacing-14) var(--spacing-24);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-8);">
+            <span style="font-size: var(--font-size-14); font-weight: var(--font-weight-regular); color: var(--text-colors-default-primary);">
+                Overall Progress
+            </span>
+            <span id="progressPct" style="font-size: var(--font-size-14); font-weight: var(--font-weight-bold); color: var(--text-colors-default-primary);">
+                0%
+            </span>
+        </div>
+        <div class="ey-progress-bar">
+            <div class="ey-progress-bar-fill" id="progressBarFill" style="width: 0%;"></div>
         </div>
     </div>
 
     <!-- Table -->
     <div class="ey-card ey-table-card">
-        <h3 class="ey-section-title">Your matched clauses</h3>
+        <h3 class="ey-section-title">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px;">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            Matched Clauses
+        </h3>
 
         <!-- ✅ CHANGED: post to Create (POST) so it can redirect to Step-3 -->
         <form id="sowGenerateForm" asp-controller="Sow" asp-action="Create" method="post">
@@ -618,13 +646,26 @@
 <!-- Sticky Bottom Action Bar -->
 <div class="ey-sticky-action-bar" id="stickyActionBar">
     <div class="ey-action-info">
-        <span><strong id="barAnswered">0</strong> of <strong id="barTotal">@totalCount</strong> answered</span>
+        <div class="ey-action-stats">
+            <span class="ey-action-stat">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="var(--accent-success-primary)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                <strong id="barAnswered">0</strong> answered
+            </span>
+            <span class="ey-action-divider">|</span>
+            <span class="ey-action-stat">
+                <strong id="barTotal">@totalCount</strong> total
+            </span>
+        </div>
         <div class="ey-progress-mini">
             <div class="ey-progress-mini-fill" id="barProgressFill" style="width: 0%;"></div>
         </div>
     </div>
     <div class="ey-action-buttons">
-        <button type="submit" form="sowGenerateForm" class="ey-btn-yellow">
+        <button type="submit" form="sowGenerateForm" class="ey-btn-yellow ey-btn-generate">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
             Generate SOW
         </button>
     </div>
@@ -657,6 +698,8 @@
             document.getElementById('barAnswered').textContent = answered;
             document.getElementById('barTotal').textContent = total;
             document.getElementById('barProgressFill').style.width = pct + '%';
+            document.getElementById('progressBarFill').style.width = pct + '%';
+            document.getElementById('progressPct').textContent = pct + '%';
         }
 
         document.querySelectorAll('.sow-answer').forEach(function(el) {

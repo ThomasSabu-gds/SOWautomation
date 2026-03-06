@@ -1623,3 +1623,372 @@ body.has-sticky-bar .footer {
   line-height: 1.6;
   margin: 0;
 }
+
+/* ============================================================
+   Outline Button
+   ============================================================ */
+
+.ey-btn-outline {
+  background: transparent;
+  color: var(--color-base-neutral-900);
+  border: var(--border-width-medium) solid var(--color-base-neutral-900);
+  padding: var(--spacing-12) var(--spacing-24);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-20);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-default);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.ey-btn-outline:hover {
+  background: var(--color-base-neutral-900);
+  color: var(--color-base-neutral-0);
+}
+
+.ey-btn-outline:active {
+  background: var(--color-base-neutral-950);
+  color: var(--color-base-neutral-0);
+}
+
+.ey-btn-secondary {
+  background: var(--bg-colors-default-primary);
+  color: var(--text-colors-default-primary);
+  border: var(--border-width-thin) solid var(--border-colors-default-secondary);
+  padding: var(--spacing-12) var(--spacing-24);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-20);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition-default);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.ey-btn-secondary:hover {
+  background: var(--bg-colors-hover-primary);
+  border-color: var(--border-colors-hover-extra-a);
+}
+
+/* ============================================================
+   Progress Bar (full-width)
+   ============================================================ */
+
+.ey-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-colors-default-tertiary);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+}
+
+.ey-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-success-primary), #2fa052);
+  border-radius: var(--border-radius-sm);
+  transition: width 0.4s ease;
+}
+
+/* ============================================================
+   Review Page - Hero Banner
+   ============================================================ */
+
+.ey-review-hero {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-20);
+  background: var(--bg-colors-default-primary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-24) var(--spacing-32);
+  box-shadow: var(--box-shadow-02);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+  border-left: 5px solid var(--color-yellow-400);
+  margin-bottom: var(--spacing-16);
+}
+
+.ey-review-hero-icon {
+  width: 56px;
+  height: 56px;
+  background: var(--accent-info-extra-a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent-info-primary);
+}
+
+.ey-review-hero-badge {
+  display: inline-block;
+  background: var(--color-base-neutral-900);
+  color: var(--color-yellow-400);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: var(--spacing-2) var(--spacing-10);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-8);
+}
+
+.ey-review-hero-text h2 {
+  margin: 0 0 var(--spacing-6) 0;
+  font-size: var(--font-size-24);
+  font-weight: var(--font-weight-regular);
+  color: var(--text-colors-default-primary);
+}
+
+.ey-review-hero-text p {
+  margin: 0;
+  font-size: var(--font-size-14);
+  color: var(--text-colors-default-secondary);
+  font-weight: var(--font-weight-light);
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Generate Page - Success Hero
+   ============================================================ */
+
+.ey-gen-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-40);
+  background: var(--bg-colors-default-primary);
+  border-radius: var(--border-radius-lg);
+  padding: 48px;
+  box-shadow: var(--box-shadow-03);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+  border-left: 5px solid var(--accent-success-primary);
+  margin-bottom: var(--spacing-20);
+}
+
+.ey-gen-hero-content {
+  max-width: 600px;
+}
+
+.ey-gen-hero-badge {
+  display: inline-block;
+  background: var(--accent-success-extra-a);
+  color: var(--accent-success-primary);
+  font-size: 0.75rem;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: var(--spacing-4) var(--spacing-14);
+  border-radius: var(--border-radius-sm);
+  margin-bottom: var(--spacing-16);
+  border: 1px solid var(--accent-success-primary);
+}
+
+.ey-gen-hero-title {
+  font-size: 2.2rem;
+  font-weight: var(--font-weight-light);
+  line-height: 1.2;
+  color: var(--text-colors-default-primary);
+  margin: 0 0 var(--spacing-16) 0;
+}
+
+.ey-gen-hero-subtitle {
+  font-size: var(--font-size-16);
+  line-height: 1.7;
+  color: var(--text-colors-default-secondary);
+  font-weight: var(--font-weight-light);
+  margin: 0 0 var(--spacing-32) 0;
+}
+
+.ey-gen-hero-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-16);
+  flex-wrap: wrap;
+}
+
+.ey-gen-hero-visual {
+  flex-shrink: 0;
+}
+
+.ey-gen-hero-graphic {
+  position: relative;
+}
+
+.ey-gen-token-error {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  background: var(--accent-error-extra-a);
+  padding: var(--spacing-14) var(--spacing-20);
+  border-radius: var(--border-radius-sm);
+  border-left: 3px solid var(--accent-error-primary);
+  font-size: var(--font-size-14);
+  color: var(--accent-error-primary);
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   Generate Page - Status Badges & Table Elements
+   ============================================================ */
+
+.ey-clause-badge {
+  display: inline-block;
+  background: var(--bg-colors-default-secondary);
+  color: var(--text-colors-default-primary);
+  font-weight: var(--font-weight-regular);
+  font-size: var(--font-size-12);
+  padding: var(--spacing-2) var(--spacing-10);
+  border-radius: var(--border-radius-sm);
+  border: var(--border-width-thin) solid var(--border-colors-default-primary);
+}
+
+.ey-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-regular);
+  padding: var(--spacing-4) var(--spacing-10);
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.ey-status-answered {
+  background: var(--accent-success-extra-a);
+  color: var(--accent-success-primary);
+}
+
+.ey-status-pending {
+  background: var(--bg-colors-default-secondary);
+  color: var(--text-colors-default-tertiary);
+}
+
+.ey-answer-text {
+  color: var(--text-colors-default-primary);
+  font-weight: var(--font-weight-regular);
+}
+
+.ey-answer-empty {
+  color: var(--text-colors-default-tertiary);
+}
+
+.ey-ph-list {
+  margin-top: var(--spacing-8);
+  padding-top: var(--spacing-8);
+  border-top: var(--border-width-thin) solid var(--border-colors-default-primary);
+}
+
+.ey-ph-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-6);
+  font-size: var(--font-size-12);
+  margin-bottom: var(--spacing-4);
+  line-height: 1.5;
+}
+
+.ey-ph-key {
+  background: var(--bg-colors-default-secondary);
+  padding: 1px 6px;
+  border-radius: var(--border-radius-xs);
+  font-size: 0.8em;
+  color: var(--accent-info-primary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ey-ph-arrow {
+  color: var(--text-colors-default-tertiary);
+  flex-shrink: 0;
+}
+
+.ey-ph-val {
+  color: var(--text-colors-default-secondary);
+}
+
+/* ============================================================
+   Empty State
+   ============================================================ */
+
+.ey-empty-state {
+  text-align: center;
+  padding: var(--spacing-40) var(--spacing-24);
+}
+
+.ey-empty-state svg {
+  margin-bottom: var(--spacing-16);
+}
+
+.ey-empty-state p {
+  color: var(--text-colors-default-secondary);
+  font-size: var(--font-size-16);
+  margin-bottom: var(--spacing-20);
+}
+
+/* ============================================================
+   Sticky Bar Enhancements
+   ============================================================ */
+
+.ey-action-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+}
+
+.ey-action-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-4);
+  font-size: var(--font-size-14);
+  color: var(--text-colors-default-secondary);
+  font-weight: var(--font-weight-light);
+}
+
+.ey-action-stat strong {
+  color: var(--text-colors-default-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.ey-action-divider {
+  color: var(--border-colors-default-secondary);
+  font-weight: var(--font-weight-light);
+}
+
+.ey-btn-generate {
+  padding: var(--spacing-12) var(--spacing-32) !important;
+  font-size: var(--font-size-16) !important;
+}
+
+/* ============================================================
+   Generate Page Responsive
+   ============================================================ */
+
+@media (max-width: 768px) {
+  .ey-gen-hero {
+    flex-direction: column;
+    text-align: center;
+    padding: var(--spacing-32) var(--spacing-16);
+  }
+
+  .ey-gen-hero-content { max-width: 100%; }
+  .ey-gen-hero-title { font-size: var(--font-size-28); }
+  .ey-gen-hero-actions { justify-content: center; }
+  .ey-gen-hero-visual { display: none; }
+
+  .ey-review-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--spacing-20) var(--spacing-16);
+  }
+
+  .ey-gen-token-error { flex-direction: column; text-align: center; }
+}

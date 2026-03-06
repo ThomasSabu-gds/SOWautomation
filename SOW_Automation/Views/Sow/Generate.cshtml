@@ -1,32 +1,24 @@
-﻿@model List<SowAutomationTool.Models.SowUiRow>
+@model List<SowAutomationTool.Models.SowUiRow>
 
 @{
     ViewData["Title"] = "SOW_GENERATE";
 
-    // Download token
     var token = ViewBag.Token as string ?? "";
-
-    // workflow id (used for going back to step-2)
     var workflowId = ViewBag.WorkflowId as string ?? "";
 
     var total = Model?.Count ?? 0;
     var answered = Model?.Count(r => !string.IsNullOrWhiteSpace(r.UserAnswer)) ?? 0;
     var remaining = total - answered;
+    var pct = total > 0 ? (int)Math.Round((double)answered / total * 100) : 0;
 }
 
 <!-- Stepper: Step 2 active -->
 <div class="ey-stepper">
     <div class="ey-stepper-inner">
-
-        <!-- Step 1: Review (Create page) -->
         <div class="ey-stepper-step completed">
-            <a asp-controller="Sow"
-               asp-action="Create"
-               asp-route-id="@workflowId">
+            <a asp-controller="Sow" asp-action="Create" asp-route-id="@workflowId">
                 <div class="ey-stepper-icon">
-                    <svg viewBox="0 0 24 24">
-                        <polyline points="20 6 9 17 4 12" />
-                    </svg>
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12" /></svg>
                 </div>
                 <div>
                     <div class="ey-stepper-label">Review</div>
@@ -34,10 +26,7 @@
                 </div>
             </a>
         </div>
-
         <div class="ey-stepper-track completed"></div>
-
-        <!-- Step 2: Generate -->
         <div class="ey-stepper-step active">
             <div class="ey-stepper-icon">2</div>
             <div>
@@ -45,63 +34,166 @@
                 <div class="ey-stepper-sublabel">Download SOW</div>
             </div>
         </div>
+    </div>
+</div>
 
+<!-- Breadcrumb -->
+<div style="max-width: 1280px; margin: var(--spacing-16) auto 0;">
+    <div class="ey-breadcrumb">
+        <a asp-controller="Home" asp-action="Index">Home</a>
+        <span class="ey-breadcrumb-chevron">
+            <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"></polyline></svg>
+        </span>
+        <a asp-controller="Sow" asp-action="Create" asp-route-id="@workflowId">Review</a>
+        <span class="ey-breadcrumb-chevron">
+            <svg viewBox="0 0 24 24"><polyline points="9 6 15 12 9 18"></polyline></svg>
+        </span>
+        <span>Generate</span>
     </div>
 </div>
 
 <div class="ey-page-container ey-page-container--wide">
 
-    <!-- Welcome / Summary -->
-    <div class="ey-welcome-card">
-        <div class="ey-welcome-text">
-            <h2>Your SOW is ready</h2>
-            <p>Your SOW document has been generated. Please click below to download it.</p>
-
-            <p style="margin-top: 8px;">
-                <strong>@answered</strong> answered &nbsp;|&nbsp;
-                <strong>@remaining</strong> remaining &nbsp;|&nbsp;
-                <strong>@total</strong> total
+    <!-- Success Hero -->
+    <div class="ey-gen-hero">
+        <div class="ey-gen-hero-content">
+            <div class="ey-gen-hero-badge">Document Ready</div>
+            <h1 class="ey-gen-hero-title">
+                Your SOW has been <span class="ey-hero-highlight">generated</span>
+            </h1>
+            <p class="ey-gen-hero-subtitle">
+                All matched clauses have been processed and your finalized Statement of Work
+                is ready for download. Review the summary below before downloading.
             </p>
+            <div class="ey-gen-hero-actions">
+                @if (!string.IsNullOrWhiteSpace(token))
+                {
+                    <a class="ey-btn-yellow ey-btn-lg"
+                       asp-controller="Sow" asp-action="Download" asp-route-id="@token">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download SOW
+                    </a>
+                    <a class="ey-btn-outline"
+                       asp-controller="Sow" asp-action="Create" asp-route-id="@workflowId">
+                        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Back to Review
+                    </a>
+                }
+                else
+                {
+                    <div class="ey-gen-token-error">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--accent-error-primary)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <span>Download token missing or expired.</span>
+                        <a asp-controller="Sow" asp-action="Create" asp-route-id="@workflowId"
+                           class="ey-btn-yellow" style="margin-left: var(--spacing-12);">
+                            Go Back &amp; Regenerate
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="ey-gen-hero-visual">
+            <div class="ey-gen-hero-graphic">
+                <div class="ey-hero-doc">
+                    <div class="ey-hero-doc-bar"></div>
+                    <div class="ey-hero-doc-line w80"></div>
+                    <div class="ey-hero-doc-line w60"></div>
+                    <div class="ey-hero-doc-line w90"></div>
+                    <div class="ey-hero-doc-line w40"></div>
+                    <div class="ey-hero-doc-line w70"></div>
+                    <div class="ey-hero-doc-check">
+                        <svg viewBox="0 0 24 24" width="32" height="32" stroke="#197335" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Download Card -->
-    <div class="ey-card" style="padding: 24px;">
-        @if (string.IsNullOrWhiteSpace(token))
-        {
-            <div style="color: #b00020;">
-                Download token missing/expired.
-                Please go back to <a asp-controller="Sow" asp-action="Create" asp-route-id="@workflowId">Review</a>
-                and click <strong>Generate SOW</strong> again.
+    <!-- Stats Bar -->
+    <div class="ey-stats-bar">
+        <div class="ey-stat-card">
+            <div class="ey-stat-icon total">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
             </div>
-        }
-        else
-        {
-            <a class="ey-btn-yellow"
-               asp-controller="Sow"
-               asp-action="Download"
-               asp-route-id="@token">
-                Download SOW
-            </a>
+            <div class="ey-stat-content">
+                <div class="stat-value">@total</div>
+                <div class="stat-label">Total Clauses</div>
+            </div>
+        </div>
+        <div class="ey-stat-card">
+            <div class="ey-stat-icon answered">
+                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            </div>
+            <div class="ey-stat-content">
+                <div class="stat-value">@answered</div>
+                <div class="stat-label">Answered</div>
+            </div>
+        </div>
+        <div class="ey-stat-card">
+            <div class="ey-stat-icon remaining">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <div class="ey-stat-content">
+                <div class="stat-value">@remaining</div>
+                <div class="stat-label">Remaining</div>
+            </div>
+        </div>
+        <div class="ey-stat-card">
+            <div class="ey-stat-icon" style="background: var(--bg-colors-default-tertiary);">
+                <svg viewBox="0 0 24 24" style="stroke: var(--text-colors-default-secondary);">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+            </div>
+            <div class="ey-stat-content">
+                <div class="stat-value">@pct%</div>
+                <div class="stat-label">Completion</div>
+            </div>
+        </div>
+    </div>
 
-            <a class="ey-btn-secondary"
-               style="margin-left: 10px;"
-               asp-controller="Sow"
-               asp-action="Create"
-               asp-route-id="@workflowId">
-                Back to Review
-            </a>
-        }
+    <!-- Completion Progress -->
+    <div class="ey-card" style="margin-bottom: var(--spacing-16); padding: var(--spacing-16) var(--spacing-24);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-8);">
+            <span style="font-size: var(--font-size-14); font-weight: var(--font-weight-regular); color: var(--text-colors-default-primary);">
+                Overall Progress
+            </span>
+            <span style="font-size: var(--font-size-14); font-weight: var(--font-weight-bold); color: var(--text-colors-default-primary);">
+                @pct%
+            </span>
+        </div>
+        <div class="ey-progress-bar">
+            <div class="ey-progress-bar-fill" style="width: @(pct)%;"></div>
+        </div>
     </div>
 
     <!-- Answers Table -->
-    <div class="ey-card ey-table-card" style="margin-top:20px;">
-        <h3 class="ey-section-title">Your Answers</h3>
+    <div class="ey-card ey-table-card" style="margin-bottom: var(--spacing-24);">
+        <h3 class="ey-section-title">Response Summary</h3>
 
         @if (Model == null || Model.Count == 0)
         {
-            <div style="padding: 16px;">
-                No rows found. Please go back to Review.
+            <div class="ey-empty-state">
+                <svg viewBox="0 0 24 24" width="48" height="48" stroke="var(--text-colors-default-tertiary)" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <p>No rows found. Please go back to Review.</p>
+                <a asp-controller="Sow" asp-action="Create" class="ey-btn-yellow">Go to Review</a>
             </div>
         }
         else
@@ -109,28 +201,59 @@
             <table>
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Clause</th>
+                        <th style="width: 60px;">#</th>
+                        <th style="width: 120px;">Clause</th>
                         <th>Your Answer</th>
+                        <th style="width: 100px;">Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var row in Model)
                     {
+                        var hasAnswer = !string.IsNullOrWhiteSpace(row.UserAnswer);
+                        var hasPlaceholders = row.PlaceholderAnswers != null
+                            && row.PlaceholderAnswers.Any(p => !string.IsNullOrWhiteSpace(p.Value));
+                        var statusClass = hasAnswer ? "ey-status-answered" : "ey-status-pending";
+                        var statusText = hasAnswer ? "Answered" : "Pending";
+
                         <tr>
                             <td>@row.RowNumber</td>
-                            <td>@row.ClauseNumber</td>
+                            <td><span class="ey-clause-badge">@row.ClauseNumber</span></td>
                             <td>
-                                @(string.IsNullOrWhiteSpace(row.UserAnswer) ? "-" : row.UserAnswer)
-                                @if (row.PlaceholderAnswers != null && row.PlaceholderAnswers.Any(p => !string.IsNullOrWhiteSpace(p.Value)))
+                                @if (hasAnswer)
                                 {
-                                    <ul style="margin:4px 0 0; padding-left:16px; font-size:0.85em; color:#555;">
+                                    <span class="ey-answer-text">@row.UserAnswer</span>
+                                }
+                                else
+                                {
+                                    <span class="ey-answer-empty">&mdash;</span>
+                                }
+                                @if (hasPlaceholders)
+                                {
+                                    <div class="ey-ph-list">
                                         @foreach (var ph in row.PlaceholderAnswers.Where(p => !string.IsNullOrWhiteSpace(p.Value)))
                                         {
-                                            <li><code>@ph.Key</code> &rarr; @ph.Value</li>
+                                            <div class="ey-ph-item">
+                                                <code class="ey-ph-key">@ph.Key</code>
+                                                <span class="ey-ph-arrow">&rarr;</span>
+                                                <span class="ey-ph-val">@ph.Value</span>
+                                            </div>
                                         }
-                                    </ul>
+                                    </div>
                                 }
+                            </td>
+                            <td>
+                                <span class="ey-status-badge @statusClass">
+                                    @if (hasAnswer)
+                                    {
+                                        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    }
+                                    else
+                                    {
+                                        <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle></svg>
+                                    }
+                                    @statusText
+                                </span>
                             </td>
                         </tr>
                     }
@@ -138,5 +261,4 @@
             </table>
         }
     </div>
-
 </div>
