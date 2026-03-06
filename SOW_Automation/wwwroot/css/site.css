@@ -904,36 +904,36 @@ button:focus-visible {
 .ey-loading-brand {
   display: flex;
   align-items: center;
-  gap: var(--spacing-16);
-  margin-bottom: 56px;
+  gap: var(--spacing-8);
+  margin-bottom: 32px;
 }
 
 .ey-loading-brand .ey-logo-box {
-  width: 48px;
-  height: 48px;
-  font-size: var(--font-size-18);
+  width: 32px;
+  height: 32px;
+  font-size: var(--font-size-14);
 }
 
 .ey-loading-brand-text {
-  font-size: var(--font-size-24);
+  font-size: var(--font-size-16);
   font-weight: var(--font-weight-regular);
   color: rgba(255, 255, 255, 0.9);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.03em;
 }
 
 .ey-rolling-blocks {
   display: flex;
   align-items: flex-end;
-  gap: 14px;
-  height: 100px;
-  margin-bottom: 56px;
+  gap: 10px;
+  height: 60px;
+  margin-bottom: 32px;
   position: relative;
 }
 
 .ey-rolling-blocks .ey-block {
-  width: 36px;
-  height: 36px;
-  border-radius: 5px;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
   transform-origin: bottom right;
   animation: ey-block-roll 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
@@ -996,12 +996,12 @@ button:focus-visible {
 }
 
 .ey-loading-progress-bar {
-  width: 400px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.15);
+  width: 260px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .ey-loading-progress-fill {
@@ -1019,16 +1019,17 @@ button:focus-visible {
 }
 
 .ey-loading-text {
-  color: rgba(255, 255, 255, 0.95);
-  font-size: var(--font-size-28);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--font-size-16);
   font-weight: var(--font-weight-regular);
-  margin-bottom: var(--spacing-12);
+  margin-bottom: var(--spacing-6);
   text-align: center;
+  letter-spacing: 0.01em;
 }
 
 .ey-loading-subtext {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: var(--font-size-16);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: var(--font-size-13);
   font-weight: var(--font-weight-light);
   text-align: center;
   animation: ey-loading-pulse 2s ease-in-out infinite;
