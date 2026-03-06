@@ -443,7 +443,7 @@ namespace SowAutomationTool.Services
                                     }
 
                                     for (int j = startIndex; j < endIndex; j++)
-                                        elements[j].Remove();
+                                        SafeRemoveElement(elements[j]);
 
                                     elements = body.Elements().ToList();
                                     i = -1;
@@ -511,7 +511,7 @@ namespace SowAutomationTool.Services
 
                     // Remove elements strictly between start and end (exclusive)
                     for (int i = endIdx - 1; i > startIdx; i--)
-                        elements[i].Remove();
+                        SafeRemoveElement(elements[i]);
 
                     // Handle end element
                     if (endIdx != startIdx)
@@ -519,14 +519,14 @@ namespace SowAutomationTool.Services
                         if (endShared)
                             StripMarkerTextFromElement(elements[endIdx], markerText);
                         else
-                            elements[endIdx].Remove();
+                            SafeRemoveElement(elements[endIdx]);
                     }
 
                     // Handle start element
                     if (startShared)
                         StripMarkerTextFromElement(elements[startIdx], markerText);
                     else
-                        elements[startIdx].Remove();
+                        SafeRemoveElement(elements[startIdx]);
 
                     // Clean up empty paragraphs with page/section breaks left behind
                     RemoveEmptyPageBreakParagraphs(body);
@@ -540,9 +540,9 @@ namespace SowAutomationTool.Services
 
                     // If stripping left an empty paragraph, remove it
                     if (endIdx != startIdx && string.IsNullOrWhiteSpace(elements[endIdx].InnerText))
-                        elements[endIdx].Remove();
+                        SafeRemoveElement(elements[endIdx]);
                     if (string.IsNullOrWhiteSpace(elements[startIdx].InnerText))
-                        elements[startIdx].Remove();
+                        SafeRemoveElement(elements[startIdx]);
                 }
             }
         }
@@ -602,7 +602,7 @@ namespace SowAutomationTool.Services
                 if (para.Ancestors<TableCell>().Any()) continue;
                 if (para.Descendants<Drawing>().Any() || para.Descendants<Picture>().Any()) continue;
                 if (para.InnerText == "" && para.Descendants<Run>().All(r => string.IsNullOrEmpty(r.InnerText)))
-                    para.Remove();
+                    SafeRemoveParagraph(para);
             }
         }
 
@@ -619,35 +619,12 @@ namespace SowAutomationTool.Services
                 var cleaned = markerRegex.Replace(fullText, "").Trim();
                 if (string.IsNullOrWhiteSpace(cleaned))
                 {
-                    // Paragraph only contained markers -- remove it entirely
-                    if (!para.Ancestors<TableCell>().Any())
-                        para.Remove();
-                    else
-                    {
-                        // Inside a table cell: clear runs instead of removing paragraph
-                        foreach (var run in para.Descendants<Run>().ToList())
-                            run.Remove();
-                    }
+                    SafeRemoveParagraph(para);
                 }
                 else
                 {
-                    // Paragraph has other content mixed with markers -- strip from each run
-                    foreach (var run in para.Descendants<Run>().ToList())
-                    {
-                        var textEl = run.GetFirstChild<Text>();
-                        if (textEl == null) continue;
-                        var original = textEl.Text;
-                        if (string.IsNullOrEmpty(original)) continue;
-
-                        // Remove full marker sequences or standalone ***** / &&&&& fragments
-                        var replaced = markerRegex.Replace(original, "");
-                        replaced = replaced.Replace("*****", "").Replace("&&&&&", "");
-                        if (replaced != original)
-                        {
-                            textEl.Text = replaced;
-                            textEl.Space = SpaceProcessingModeValues.Preserve;
-                        }
-                    }
+                    var runs = para.Descendants<Run>().ToList();
+                    RemovePatternAcrossRuns(runs, markerRegex);
                 }
             }
         }
@@ -681,7 +658,7 @@ namespace SowAutomationTool.Services
                 }
 
                 if (hasPageBreak)
-                    para.Remove();
+                    SafeRemoveParagraph(para);
             }
         }
 
@@ -873,11 +850,11 @@ namespace SowAutomationTool.Services
                     if (tableRow != null)
                         tableRow.Remove();
                     else
-                        para.Remove();
+                        SafeRemoveParagraph(para);
                 }
                 else
                 {
-                    para.Remove();
+                    SafeRemoveParagraph(para);
                 }
             }
             else if (answer.Equals("N/A", StringComparison.OrdinalIgnoreCase))
@@ -909,12 +886,14 @@ namespace SowAutomationTool.Services
                         .ToDictionary(g => g.Key, g => g.Last().Value ?? "");
                     ReplacePlaceholdersInRuns(runs, placeholderDict, matchedRow.GetPlaceholderInfos());
                 }
+                RemoveUnfilledPlaceholders(runs, matchedRow);
                 if (matchedRow.HasAppendPlaceholder)
                     ReplaceAppendInRuns(runs, matchedRow.AppendText);
                 RemoveHighlightFormattingFromRuns(runs);
             }
             else if (answer.Equals("Yes", StringComparison.OrdinalIgnoreCase))
             {
+                RemoveUnfilledPlaceholders(runs, matchedRow);
                 if (matchedRow.HasAppendPlaceholder)
                     ReplaceAppendInRuns(runs, matchedRow.AppendText);
                 RemoveHighlightFormattingFromRuns(runs);
@@ -927,6 +906,76 @@ namespace SowAutomationTool.Services
             {
                 RemoveHighlightFormattingFromRuns(runs);
             }
+        }
+
+        #endregion
+
+        #region Safe Removal Helpers
+
+        /// <summary>
+        /// Safely removes a paragraph, ensuring table cells keep at least one paragraph
+        /// and the body's last sectPr is preserved. Prevents "unreadable content" corruption.
+        /// </summary>
+        private static void SafeRemoveParagraph(Paragraph para)
+        {
+            if (para.Parent == null) return;
+
+            var cell = para.Ancestors<TableCell>().FirstOrDefault();
+            if (cell != null)
+            {
+                // Table cells MUST have at least one paragraph in OpenXML
+                if (cell.Elements<Paragraph>().Count() <= 1)
+                {
+                    // Clear content instead of removing
+                    foreach (var run in para.Descendants<Run>().ToList())
+                        run.Remove();
+                    return;
+                }
+            }
+
+            var body = para.Ancestors<Body>().FirstOrDefault();
+            if (body != null)
+            {
+                // Preserve section properties on the last body paragraph
+                var sectPr = para.Descendants<SectionProperties>().FirstOrDefault()
+                          ?? para.ParagraphProperties?.Descendants<SectionProperties>().FirstOrDefault();
+                if (sectPr != null)
+                {
+                    // Move sectPr to the previous paragraph or body
+                    var prevPara = para.PreviousSibling<Paragraph>();
+                    if (prevPara != null)
+                    {
+                        if (prevPara.ParagraphProperties == null)
+                            prevPara.ParagraphProperties = new ParagraphProperties();
+                        prevPara.ParagraphProperties.AppendChild(sectPr.CloneNode(true));
+                    }
+                    else
+                    {
+                        body.AppendChild(sectPr.CloneNode(true));
+                    }
+                }
+
+                // Don't remove if it's the very last paragraph in the body
+                if (body.Elements<Paragraph>().Count() <= 1)
+                {
+                    foreach (var run in para.Descendants<Run>().ToList())
+                        run.Remove();
+                    return;
+                }
+            }
+
+            para.Remove();
+        }
+
+        /// <summary>
+        /// Safely removes an element, with special handling if it's a paragraph.
+        /// </summary>
+        private static void SafeRemoveElement(OpenXmlElement element)
+        {
+            if (element is Paragraph para)
+                SafeRemoveParagraph(para);
+            else
+                element.Remove();
         }
 
         #endregion
@@ -1224,6 +1273,49 @@ namespace SowAutomationTool.Services
             }
         }
 
+        private void RemoveUnfilledPlaceholders(List<Run> runs, SowUiRow row)
+        {
+            if (runs.Count == 0) return;
+
+            var phInfos = row.GetPlaceholderInfos();
+            if (phInfos.Count == 0) return;
+
+            var fullText = new StringBuilder();
+            foreach (var run in runs)
+                fullText.Append(run.InnerText);
+            var text = fullText.ToString();
+
+            // Remove each unfilled placeholder from the text
+            foreach (var ph in phInfos)
+            {
+                text = ReplaceIgnoreCase(text, ph.FullText, "");
+                if (ph.IsNested)
+                {
+                    foreach (var inner in ph.InnerPlaceholders)
+                        text = ReplaceIgnoreCase(text, inner, "");
+                }
+            }
+
+            // Clean up double spaces left by removal
+            text = Regex.Replace(text, @"  +", " ");
+
+            // Write back
+            if (runs.Count > 0)
+            {
+                var textEl = runs[0].GetFirstChild<Text>();
+                if (textEl != null)
+                {
+                    textEl.Text = text;
+                    textEl.Space = SpaceProcessingModeValues.Preserve;
+                }
+                for (int i = 1; i < runs.Count; i++)
+                {
+                    var t = runs[i].GetFirstChild<Text>();
+                    if (t != null) t.Text = "";
+                }
+            }
+        }
+
         private void ReplaceSpecificRuns(List<Run> runs, string userText)
         {
             if (runs.Count == 0) return;
@@ -1250,6 +1342,9 @@ namespace SowAutomationTool.Services
 
         private void RemoveNoteToDraftFromDocument(Body body)
         {
+            var noteToDraftPattern = new Regex(@"\s?\[NOTE TO DRAFT[^\]]*\]", RegexOptions.IgnoreCase);
+            var optionalPattern = new Regex(@"\s?\[Optional[^\]]*\]", RegexOptions.IgnoreCase);
+
             foreach (var para in body.Descendants<Paragraph>().ToList())
             {
                 var runs = para.Descendants<Run>().ToList();
@@ -1258,41 +1353,16 @@ namespace SowAutomationTool.Services
                 var fullText = string.Join("", runs.Select(r => r.InnerText));
                 if (string.IsNullOrEmpty(fullText)) continue;
 
-                var cleaned = Regex.Replace(fullText,
-                    @"\s?\[NOTE TO DRAFT[^\]]*\]", "", RegexOptions.IgnoreCase);
-                cleaned = Regex.Replace(cleaned,
-                    @"\s?\[Optional[^\]]*\]", "", RegexOptions.IgnoreCase);
+                bool changed = RemovePatternAcrossRuns(runs, noteToDraftPattern);
+                changed |= RemovePatternAcrossRuns(runs, optionalPattern);
 
-                if (cleaned == fullText) continue;
+                if (!changed) continue;
 
-                cleaned = Regex.Replace(cleaned, @"\s+", " ").Trim();
-
-                if (string.IsNullOrWhiteSpace(cleaned))
+                var remaining = string.Join("", runs.Select(r => r.InnerText));
+                if (string.IsNullOrWhiteSpace(remaining))
                 {
                     foreach (var run in runs)
                         run.Remove();
-                }
-                else
-                {
-                    var firstRun = runs[0];
-                    var textEl = firstRun.GetFirstChild<Text>();
-                    if (textEl != null)
-                    {
-                        textEl.Text = cleaned;
-                        textEl.Space = SpaceProcessingModeValues.Preserve;
-                    }
-                    else
-                    {
-                        firstRun.RemoveAllChildren<Text>();
-                        firstRun.AppendChild(new Text(cleaned)
-                            { Space = SpaceProcessingModeValues.Preserve });
-                    }
-
-                    for (int i = 1; i < runs.Count; i++)
-                    {
-                        var t = runs[i].GetFirstChild<Text>();
-                        if (t != null) t.Text = "";
-                    }
                 }
             }
         }
@@ -1387,7 +1457,6 @@ namespace SowAutomationTool.Services
 
             if (variableMap.Count == 0) return;
 
-            // Replace variables per-paragraph to handle cross-run text
             foreach (var para in body.Descendants<Paragraph>().ToList())
             {
                 var runs = para.Descendants<Run>().ToList();
@@ -1396,29 +1465,20 @@ namespace SowAutomationTool.Services
                 var fullText = string.Join("", runs.Select(r => r.InnerText));
                 if (string.IsNullOrEmpty(fullText)) continue;
 
-                var replaced = fullText;
+                bool hasVariable = false;
                 foreach (var kvp in variableMap)
-                    replaced = replaced.Replace(kvp.Key, kvp.Value, StringComparison.OrdinalIgnoreCase);
-
-                if (replaced == fullText) continue;
-
-                var firstRun = runs[0];
-                var textEl = firstRun.GetFirstChild<Text>();
-                if (textEl != null)
                 {
-                    textEl.Text = replaced;
-                    textEl.Space = SpaceProcessingModeValues.Preserve;
+                    if (fullText.Contains(kvp.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        hasVariable = true;
+                        break;
+                    }
                 }
-                else
-                {
-                    firstRun.RemoveAllChildren<Text>();
-                    firstRun.AppendChild(new Text(replaced) { Space = SpaceProcessingModeValues.Preserve });
-                }
+                if (!hasVariable) continue;
 
-                for (int ri = 1; ri < runs.Count; ri++)
+                foreach (var kvp in variableMap)
                 {
-                    var t = runs[ri].GetFirstChild<Text>();
-                    if (t != null) t.Text = "";
+                    while (ReplaceTextAcrossRuns(runs, kvp.Key, kvp.Value)) { }
                 }
             }
         }
@@ -1456,6 +1516,101 @@ namespace SowAutomationTool.Services
             var match = Regex.Match(source, pattern, RegexOptions.IgnoreCase);
             if (!match.Success) return source;
             return source.Substring(0, match.Index) + replacement + source.Substring(match.Index + match.Length);
+        }
+
+        /// <summary>
+        /// Removes all matches of a regex pattern from paragraph runs while
+        /// preserving each run's formatting. Only the runs overlapping a match
+        /// are modified; all other runs stay untouched.
+        /// </summary>
+        private static bool RemovePatternAcrossRuns(List<Run> runs, Regex pattern)
+        {
+            bool anyRemoved = false;
+            bool found;
+            do
+            {
+                found = false;
+                var fullSb = new StringBuilder();
+                var runStarts = new List<int>();
+                foreach (var run in runs)
+                {
+                    runStarts.Add(fullSb.Length);
+                    fullSb.Append(run.InnerText);
+                }
+                var fullText = fullSb.ToString();
+
+                var match = pattern.Match(fullText);
+                if (!match.Success) break;
+
+                found = true;
+                anyRemoved = true;
+
+                int matchStart = match.Index;
+                int matchEnd = match.Index + match.Length;
+
+                for (int ri = 0; ri < runs.Count; ri++)
+                {
+                    int rStart = runStarts[ri];
+                    int rEnd = ri + 1 < runs.Count ? runStarts[ri + 1] : fullText.Length;
+                    if (rEnd <= matchStart || rStart >= matchEnd) continue;
+
+                    var textEl = runs[ri].GetFirstChild<Text>();
+                    if (textEl == null) continue;
+
+                    int localStart = Math.Max(0, matchStart - rStart);
+                    int localEnd = Math.Min(textEl.Text.Length, matchEnd - rStart);
+                    textEl.Text = textEl.Text.Substring(0, localStart) + textEl.Text.Substring(localEnd);
+                    textEl.Space = SpaceProcessingModeValues.Preserve;
+                }
+            } while (found);
+
+            return anyRemoved;
+        }
+
+        /// <summary>
+        /// Replaces one occurrence of oldValue across paragraph runs while
+        /// preserving each run's formatting. The replacement text inherits
+        /// the formatting of the run where the match starts.
+        /// </summary>
+        private static bool ReplaceTextAcrossRuns(List<Run> runs, string oldValue, string newValue,
+            StringComparison comparison = StringComparison.OrdinalIgnoreCase)
+        {
+            var fullSb = new StringBuilder();
+            var runStarts = new List<int>();
+            foreach (var run in runs)
+            {
+                runStarts.Add(fullSb.Length);
+                fullSb.Append(run.InnerText);
+            }
+            var fullText = fullSb.ToString();
+
+            int idx = fullText.IndexOf(oldValue, comparison);
+            if (idx < 0) return false;
+
+            int matchEnd = idx + oldValue.Length;
+
+            for (int ri = 0; ri < runs.Count; ri++)
+            {
+                int rStart = runStarts[ri];
+                int rEnd = ri + 1 < runs.Count ? runStarts[ri + 1] : fullText.Length;
+                if (rEnd <= idx || rStart >= matchEnd) continue;
+
+                var textEl = runs[ri].GetFirstChild<Text>();
+                if (textEl == null) continue;
+
+                int localStart = Math.Max(0, idx - rStart);
+                int localEnd = Math.Min(textEl.Text.Length, matchEnd - rStart);
+
+                bool isMatchStart = (rStart <= idx && idx < rEnd);
+                if (isMatchStart)
+                    textEl.Text = textEl.Text.Substring(0, localStart) + newValue + textEl.Text.Substring(localEnd);
+                else
+                    textEl.Text = textEl.Text.Substring(0, localStart) + textEl.Text.Substring(localEnd);
+
+                textEl.Space = SpaceProcessingModeValues.Preserve;
+            }
+
+            return true;
         }
 
         #endregion

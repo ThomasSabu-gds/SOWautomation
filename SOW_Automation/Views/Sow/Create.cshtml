@@ -382,6 +382,7 @@
                                         <option value="No">No</option>
 
                                     </select>
+
                                     <div class="append-input" id="append-@i" style="display:none; margin-top:8px;">
                                         <textarea asp-for="@Model[i].AppendText"
                                                   class="sow-answer append-field"
@@ -402,6 +403,7 @@
                                             <option value="@opt.Value">@opt.Label</option>
                                         }
                                     </select>
+
                                     <div class="append-input" id="append-@i" style="display:none; margin-top:8px;">
                                         <textarea asp-for="@Model[i].AppendText"
                                                   class="sow-answer append-field"
@@ -430,6 +432,7 @@
                                             <option value="@opt.Value">@opt.Label</option>
                                         }
                                     </select>
+
                                     <div class="placeholder-inputs" id="placeholders-@i" style="display:none; margin-top:8px;">
                                         @{ int phIdx1 = 0; }
                                         @for (int pi = 0; pi < phInfos.Count; pi++)
@@ -490,6 +493,7 @@
                                         <option value="No">No</option>
 
                                     </select>
+
                                     <div class="placeholder-inputs" id="placeholders-@i" style="display:none; margin-top:8px;">
                                         @{ int phIdx2 = 0; }
                                         @for (int pi = 0; pi < phInfos.Count; pi++)
@@ -600,6 +604,7 @@
                                         <option value="No">No</option>
 
                                     </select>
+
                                 }
                                 else if (options.Count > 0)
                                 {
@@ -610,6 +615,7 @@
                                             <option value="@opt.Value">@opt.Label</option>
                                         }
                                     </select>
+
                                 }
                                 else
                                 {
@@ -1056,7 +1062,7 @@
         });
         evaluateParentDeps();
 
-        // Re-index all placeholder fields and validate custom-required before submit
+        // Re-index all placeholder fields and validate before submit
         document.getElementById('sowGenerateForm').addEventListener('submit', function(e) {
             // Validate custom replacement fields: all enabled custom-required textareas must be filled
             var emptyFields = [];
