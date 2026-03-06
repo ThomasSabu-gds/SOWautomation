@@ -1044,6 +1044,41 @@
         });
         evaluateParentDeps();
 
+        // ====== Page-load: restore toggle states & placeholder values for cached data ======
+
+        // Bug 1 Fix: Trigger toggle handlers for pre-populated values so child fields show/enable
+        document.querySelectorAll('.hier-toggle, .placeholder-toggle, .append-toggle').forEach(function(el) {
+            var val = el.tagName === 'SELECT' ? el.value : (el.value || '').trim();
+            if (val !== '') {
+                el.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+
+        // Bug 2 Fix: Restore PlaceholderAnswers values from model into textareas/selects
+        var savedPhAnswers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+            Model.Select((r, idx) => new {
+                rowIdx = idx,
+                answers = (r.PlaceholderAnswers ?? new List<SowAutomationTool.Models.PlaceholderEntry>())
+                    .Select(a => new { key = a.Key, value = a.Value }).ToList()
+            }).Where(x => x.answers.Any(a => !string.IsNullOrWhiteSpace(a.value))).ToList()
+        ));
+        savedPhAnswers.forEach(function(row) {
+            row.answers.forEach(function(entry) {
+                if (!entry.value) return;
+                var keyFields = document.querySelectorAll('.ph-key-row-' + row.rowIdx + ':not(:disabled)');
+                var valueFields = document.querySelectorAll('.ph-value-row-' + row.rowIdx + ':not(:disabled)');
+                for (var k = 0; k < keyFields.length; k++) {
+                    if (keyFields[k].value === entry.key && valueFields[k]) {
+                        valueFields[k].value = entry.value;
+                        break;
+                    }
+                }
+            });
+        });
+
+        replaceVariablesInUI();
+        evaluateParentDeps();
+
         // Re-index all placeholder fields and validate before submit
         document.getElementById('sowGenerateForm').addEventListener('submit', function(e) {
             // Validate custom replacement fields: all enabled custom-required textareas must be filled
