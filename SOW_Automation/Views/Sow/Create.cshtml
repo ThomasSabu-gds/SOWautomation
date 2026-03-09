@@ -11,6 +11,28 @@
 
     // ✅ workflow id comes from controller: ViewBag.WorkflowId = workflowId;
     var workflowId = ViewBag.WorkflowId as string ?? "";
+
+    // Determine question type per row for data attribute
+    string GetQuestionType(SowAutomationTool.Models.SowUiRow row)
+    {
+        var tipsLwr = row.Tips?.ToLower() ?? "";
+        var isYN = tipsLwr.Contains("yes") || tipsLwr.Contains("no");
+        var hasPh = row.GetPlaceholderInfos().Count > 0;
+        var hasAppend = row.HasAppendPlaceholder;
+        var opts = row.Options;
+
+        if (row.IsSectionMarker) return "yesno";
+        if (row.HasHierarchicalTips && hasPh) return "yesno-update";
+        if (hasAppend && !hasPh && isYN) return "yesno-update";
+        if (hasAppend && !hasPh && opts.Count > 0) return "yesno-update";
+        if (hasAppend && !hasPh) return "text";
+        if (hasPh && opts.Count > 0) return "yesno-update";
+        if (hasPh && isYN) return "yesno-update";
+        if (hasPh) return "text";
+        if (isYN) return "yesno";
+        if (opts.Count > 0) return "yesno";
+        return "text";
+    }
 }
 
 <!-- Stepper: Step 1 active -->
@@ -37,7 +59,7 @@
 </div>
 
 <!-- Breadcrumb -->
-<div style="max-width: 1280px; margin: var(--spacing-16) auto 0;">
+<div style="max-width: 1320px; margin: var(--spacing-8) auto 0;">
     <div class="ey-breadcrumb">
         <a asp-controller="Home" asp-action="Index">Home</a>
         <span class="ey-breadcrumb-chevron">
@@ -80,6 +102,59 @@
         </div>
     </div>
 
+    <!-- Question Type Breakdown -->
+    <div class="ey-card ey-effort-breakdown">
+        <div class="ey-effort-header">
+            <div class="ey-effort-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+            </div>
+            <div>
+                <h3 class="ey-effort-title">Question Breakdown</h3>
+                <p class="ey-effort-subtitle">Overview of question types you will encounter</p>
+            </div>
+        </div>
+        <div class="ey-effort-grid ey-effort-grid--3">
+            <div class="ey-effort-item ey-effort-quick">
+                <div class="ey-effort-item-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--accent-success-primary)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <div class="ey-effort-item-value" id="qtype-yesno">0</div>
+                <div class="ey-effort-item-label">Yes / No Selection</div>
+                <div class="ey-effort-item-hint">Select Yes or No from dropdown</div>
+            </div>
+            <div class="ey-effort-item ey-effort-update">
+                <div class="ey-effort-item-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--accent-warning-primary)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                </div>
+                <div class="ey-effort-item-value" id="qtype-yesno-update">0</div>
+                <div class="ey-effort-item-label">Yes / No with Update</div>
+                <div class="ey-effort-item-hint">Select and provide additional details</div>
+            </div>
+            <div class="ey-effort-item ey-effort-text">
+                <div class="ey-effort-item-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--accent-error-primary)" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="17" y1="10" x2="3" y2="10"></line>
+                        <line x1="21" y1="6" x2="3" y2="6"></line>
+                        <line x1="21" y1="14" x2="3" y2="14"></line>
+                        <line x1="17" y1="18" x2="3" y2="18"></line>
+                    </svg>
+                </div>
+                <div class="ey-effort-item-value" id="qtype-text">0</div>
+                <div class="ey-effort-item-label">Text Input</div>
+                <div class="ey-effort-item-hint">Enter your response in a text field</div>
+            </div>
+        </div>
+    </div>
+
     <!-- Welcome Hero -->
     <div class="ey-review-hero">
         <div class="ey-review-hero-icon">
@@ -100,12 +175,12 @@
     </div>
 
     <!-- Progress Bar -->
-    <div class="ey-card" style="margin-bottom: var(--spacing-16); padding: var(--spacing-14) var(--spacing-24);">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-8);">
-            <span style="font-size: var(--font-size-14); font-weight: var(--font-weight-regular); color: var(--text-colors-default-primary);">
+    <div class="ey-card" style="margin-bottom: var(--spacing-12); padding: var(--spacing-12) var(--spacing-20);">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-6);">
+            <span style="font-size: var(--font-size-13); font-weight: var(--font-weight-regular); color: var(--text-colors-default-primary);">
                 Overall Progress
             </span>
-            <span id="progressPct" style="font-size: var(--font-size-14); font-weight: var(--font-weight-bold); color: var(--text-colors-default-primary);">
+            <span id="progressPct" style="font-size: var(--font-size-13); font-weight: var(--font-weight-bold); color: var(--text-colors-default-primary);">
                 0%
             </span>
         </div>
@@ -152,7 +227,7 @@
                         var hasPlaceholders = phInfos.Count > 0;
                         var hasAppendPh = Model[i].HasAppendPlaceholder;
                         var options = Model[i].Options;
-                        <tr data-row-index="@i" data-clause="@Model[i].ClauseNumber" data-parents="@Model[i].ParentClauses">
+                        <tr data-row-index="@i" data-clause="@Model[i].ClauseNumber" data-parents="@Model[i].ParentClauses" data-qtype="@GetQuestionType(Model[i])">
                             <td>
                                 @Model[i].RowNumber
                                 <input type="hidden" asp-for="@Model[i].RowNumber" />
@@ -701,6 +776,19 @@
             document.getElementById('barProgressFill').style.width = pct + '%';
             document.getElementById('progressBarFill').style.width = pct + '%';
             document.getElementById('progressPct').textContent = pct + '%';
+
+            // Update question type breakdown counts (only visible rows)
+            var qtYesNo = 0, qtYesNoUpdate = 0, qtText = 0;
+            document.querySelectorAll('tr[data-row-index]').forEach(function(tr) {
+                if (tr.style.display === 'none') return;
+                var qt = tr.dataset.qtype;
+                if (qt === 'yesno') qtYesNo++;
+                else if (qt === 'yesno-update') qtYesNoUpdate++;
+                else qtText++;
+            });
+            document.getElementById('qtype-yesno').textContent = qtYesNo;
+            document.getElementById('qtype-yesno-update').textContent = qtYesNoUpdate;
+            document.getElementById('qtype-text').textContent = qtText;
         }
 
         document.querySelectorAll('.sow-answer').forEach(function(el) {
@@ -1141,6 +1229,18 @@
                 alert('Please fill in all required custom replacement fields.');
                 return;
             }
+
+            // Enable all sub-fields in visible rows so disabled toggle children get submitted
+            document.querySelectorAll('tr[data-row-index]').forEach(function(tr) {
+                if (tr.style.display === 'none') return;
+                var idx = tr.dataset.rowIndex;
+                tr.querySelectorAll('.hier-field:disabled, .placeholder-field:disabled, .append-field:disabled').forEach(function(f) {
+                    f.disabled = false;
+                });
+                document.querySelectorAll('.ph-key-row-' + idx + ':disabled, .ph-value-row-' + idx + ':disabled').forEach(function(f) {
+                    f.disabled = false;
+                });
+            });
 
             document.querySelectorAll('tr[data-row-index]').forEach(function(tr) {
                 reindexPlaceholders(tr.dataset.rowIndex);

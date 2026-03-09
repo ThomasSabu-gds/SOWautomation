@@ -97,8 +97,12 @@ namespace SowAutomationTool.Controllers
                     if (formLookup.TryGetValue(cached.RowNumber, out var formRow))
                     {
                         cached.UserAnswer = formRow.UserAnswer;
-                        cached.PlaceholderAnswers = formRow.PlaceholderAnswers;
-                        cached.AppendText = formRow.AppendText;
+                        // Disabled fields are not submitted, so null means "not in form" rather than "cleared".
+                        // Only overwrite when the form actually sent data to avoid wiping cached values.
+                        if (formRow.PlaceholderAnswers != null)
+                            cached.PlaceholderAnswers = formRow.PlaceholderAnswers;
+                        if (formRow.AppendText != null)
+                            cached.AppendText = formRow.AppendText;
                     }
                 }
                 _cache.Set(WfKey(id, "rows"), cachedRows, CacheTtl);

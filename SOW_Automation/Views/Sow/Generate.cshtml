@@ -6,8 +6,48 @@
     var token = ViewBag.Token as string ?? "";
     var workflowId = ViewBag.WorkflowId as string ?? "";
 
-    var total = Model?.Count ?? 0;
-    var answered = Model?.Count(r => !string.IsNullOrWhiteSpace(r.UserAnswer)) ?? 0;
+    // Build clause answer lookup for parent-child visibility
+    var clauseAnswers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+    if (Model != null)
+    {
+        foreach (var r in Model)
+        {
+            if (!string.IsNullOrWhiteSpace(r.ClauseNumber))
+                clauseAnswers[r.ClauseNumber.Trim()] = (r.UserAnswer ?? "").Trim();
+        }
+    }
+
+    // Determine visible rows (same logic as the Review page JS evaluateParentDeps)
+    bool IsRowVisible(SowAutomationTool.Models.SowUiRow row)
+    {
+        if (string.IsNullOrWhiteSpace(row.ParentClauses)) return true;
+        var parents = row.ParentClauses.Split(',').Select(p => p.Trim()).Where(p => p.Length > 0).ToList();
+        if (parents.Count == 0) return true;
+
+        // Hidden when ALL parents evaluate to "hide"
+        bool allHide = parents.All(p =>
+        {
+            var dashMatch = System.Text.RegularExpressions.Regex.Match(p, @"^(.+)-(\d+)$");
+            if (dashMatch.Success)
+            {
+                var parentClause = dashMatch.Groups[1].Value;
+                clauseAnswers.TryGetValue(parentClause, out var ans);
+                ans = (ans ?? "").Trim();
+                if (ans == "" || ans.Equals("No", StringComparison.OrdinalIgnoreCase)) return true;
+                return false;
+            }
+            else
+            {
+                clauseAnswers.TryGetValue(p, out var ans);
+                return (ans ?? "").Equals("No", StringComparison.OrdinalIgnoreCase);
+            }
+        });
+        return !allHide;
+    }
+
+    var visibleRows = Model?.Where(r => IsRowVisible(r)).ToList() ?? new List<SowAutomationTool.Models.SowUiRow>();
+    var total = visibleRows.Count;
+    var answered = visibleRows.Count(r => !string.IsNullOrWhiteSpace(r.UserAnswer));
     var remaining = total - answered;
     var pct = total > 0 ? (int)Math.Round((double)answered / total * 100) : 0;
 }
@@ -38,7 +78,7 @@
 </div>
 
 <!-- Breadcrumb -->
-<div style="max-width: 1280px; margin: var(--spacing-16) auto 0;">
+<div style="max-width: 1320px; margin: var(--spacing-8) auto 0;">
     <div class="ey-breadcrumb">
         <a asp-controller="Home" asp-action="Index">Home</a>
         <span class="ey-breadcrumb-chevron">
@@ -168,7 +208,7 @@
     </div>
 
     <!-- Completion Progress -->
-    <div class="ey-card" style="margin-bottom: var(--spacing-16); padding: var(--spacing-16) var(--spacing-24);">
+    <div class="ey-card" style="margin-bottom: var(--spacing-12); padding: var(--spacing-12) var(--spacing-20);">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-8);">
             <span style="font-size: var(--font-size-14); font-weight: var(--font-weight-regular); color: var(--text-colors-default-primary);">
                 Overall Progress
