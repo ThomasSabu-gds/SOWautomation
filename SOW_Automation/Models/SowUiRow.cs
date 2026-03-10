@@ -51,6 +51,7 @@ namespace SowAutomationTool.Models
         public string? UserAnswer { get; set; }
         public string VariableName { get; set; } = "";
         public string ParentClauses { get; set; } = "";
+        public bool IsMandatory { get; set; }
 
         public List<SowOption> Options { get; set; } = new();
 

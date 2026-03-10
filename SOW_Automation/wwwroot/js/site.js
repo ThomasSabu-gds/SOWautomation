@@ -44,10 +44,16 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Show loading on form submit (Generate SOW button)
+    // Deferred check: waits for all synchronous submit handlers (including validation)
+    // to finish before showing the overlay. If validation called preventDefault(), skip.
     var sowForm = document.getElementById('sowGenerateForm');
     if (sowForm) {
-        sowForm.addEventListener('submit', function () {
-            showLoading('Generating SOW...', 'Applying your responses to the template');
+        sowForm.addEventListener('submit', function (e) {
+            setTimeout(function () {
+                if (!e.defaultPrevented) {
+                    showLoading('Generating SOW...', 'Applying your responses to the template');
+                }
+            }, 0);
         });
     }
 

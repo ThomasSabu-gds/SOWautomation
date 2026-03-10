@@ -35,6 +35,9 @@
     }
 }
 
+<!-- Toast Container (fixed position) -->
+<div class="ey-toast-container" id="toastContainer"></div>
+
 <!-- Stepper: Step 1 active -->
 <div class="ey-stepper">
     <div class="ey-stepper-inner">
@@ -189,6 +192,25 @@
         </div>
     </div>
 
+    <!-- Validation Banner -->
+    <div class="ey-validation-banner" id="validationBanner">
+        <svg class="ey-validation-banner-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <div class="ey-validation-banner-content">
+            <div class="ey-validation-banner-title" id="validationBannerTitle">Mandatory fields incomplete</div>
+            <div class="ey-validation-banner-text" id="validationBannerText"></div>
+        </div>
+        <button class="ey-validation-banner-close" onclick="document.getElementById('validationBanner').classList.remove('active');" aria-label="Dismiss">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+        </button>
+    </div>
+
     <!-- Table -->
     <div class="ey-card ey-table-card">
         <h3 class="ey-section-title">
@@ -227,10 +249,15 @@
                         var hasPlaceholders = phInfos.Count > 0;
                         var hasAppendPh = Model[i].HasAppendPlaceholder;
                         var options = Model[i].Options;
-                        <tr data-row-index="@i" data-clause="@Model[i].ClauseNumber" data-parents="@Model[i].ParentClauses" data-qtype="@GetQuestionType(Model[i])">
+                        <tr data-row-index="@i" data-clause="@Model[i].ClauseNumber" data-parents="@Model[i].ParentClauses" data-qtype="@GetQuestionType(Model[i])" data-mandatory="@(Model[i].IsMandatory ? "1" : "0")">
                             <td>
                                 @Model[i].RowNumber
+                                @if (Model[i].IsMandatory)
+                                {
+                                    <span class="mandatory-badge" title="Mandatory">*</span>
+                                }
                                 <input type="hidden" asp-for="@Model[i].RowNumber" />
+                                <input type="hidden" asp-for="@Model[i].IsMandatory" />
                             </td>
 
                             <td>
@@ -348,6 +375,10 @@
                             <input type="hidden" asp-for="@Model[i].ParentClauses" />
 
                             <td>
+                                @if (Model[i].IsMandatory)
+                                {
+                                    <div class="ey-required-label"><span class="ey-required-star">*</span> Required</div>
+                                }
                                 @if (isSectionMarker)
                                 {
                                     <select asp-for="@Model[i].UserAnswer" class="sow-answer">
@@ -790,9 +821,38 @@
             document.getElementById('qtype-text').textContent = qtText;
         }
 
+        function clearMandatoryHighlight(el) {
+            var tr = el.closest('tr[data-mandatory="1"]');
+            if (!tr) return;
+            // Unwrap this field if it was filled
+            if ((el.value || '').trim() !== '') unwrapFieldErrIcon(el);
+            // Check if all fields are now filled
+            var idx = tr.dataset.rowIndex;
+            var mainEl = document.querySelector('[name="rows[' + idx + '].UserAnswer"]');
+            if (!mainEl || (mainEl.value || '').trim() === '') return;
+            var allFilled = true;
+            tr.querySelectorAll('textarea:not(:disabled), select:not(:disabled)').forEach(function(sf) {
+                if (sf.name && sf.name.indexOf('.UserAnswer') !== -1) return;
+                if (sf.type === 'hidden') return;
+                if ((sf.value || '').trim() === '') allFilled = false;
+            });
+            if (allFilled) {
+                tr.classList.remove('mandatory-missing');
+                tr.querySelectorAll('.ey-field-err-wrap').forEach(function(wrap) {
+                    var field = wrap.querySelector('textarea, select');
+                    if (field) wrap.parentNode.insertBefore(field, wrap);
+                    wrap.remove();
+                });
+                tr.querySelectorAll('.ey-sub-required').forEach(function(el) { el.remove(); });
+                if (document.querySelectorAll('tr.mandatory-missing').length === 0) {
+                    document.getElementById('validationBanner').classList.remove('active');
+                }
+            }
+        }
+
         document.querySelectorAll('.sow-answer').forEach(function(el) {
-            el.addEventListener('change', updateProgress);
-            el.addEventListener('input', updateProgress);
+            el.addEventListener('change', function() { updateProgress(); clearMandatoryHighlight(this); });
+            el.addEventListener('input', function() { updateProgress(); clearMandatoryHighlight(this); });
         });
 
         updateProgress();
@@ -830,6 +890,20 @@
             });
         }
 
+        function injectSubRequiredStars(tr) {
+            if (!tr || tr.dataset.mandatory !== '1') return;
+            // Only target fields inside toggled containers, not always-visible ones
+            tr.querySelectorAll('.hier-children textarea:not(:disabled), .hier-children select:not(:disabled), .placeholder-inputs textarea:not(:disabled), .placeholder-inputs select:not(:disabled), .append-input textarea:not(:disabled)').forEach(function(sf) {
+                if (sf.type === 'hidden') return;
+                var prev = sf.previousElementSibling;
+                if (prev && prev.classList.contains('ey-sub-required')) return;
+                var label = document.createElement('div');
+                label.className = 'ey-sub-required';
+                label.innerHTML = '<span class="ey-required-star">*</span> Required';
+                sf.parentNode.insertBefore(label, sf);
+            });
+        }
+
         // Toggle hierarchical children when root answer changes
         document.querySelectorAll('.hier-toggle').forEach(function(el) {
             function handleHierToggle() {
@@ -841,11 +915,14 @@
                 if (show) {
                     container.style.display = 'block';
                     container.querySelectorAll('.hier-field').forEach(function(f) { f.disabled = false; });
+                    var tr = el.closest('tr[data-row-index]');
+                    setTimeout(function() { injectSubRequiredStars(tr); }, 0);
                 } else {
                     container.style.display = 'none';
                     container.querySelectorAll('.hier-field').forEach(function(f) { f.disabled = true; });
                     container.querySelectorAll('select.hier-field').forEach(function(f) { f.value = ''; });
                     container.querySelectorAll('textarea.hier-field').forEach(function(f) { f.value = ''; });
+                    container.querySelectorAll('.ey-sub-required').forEach(function(el) { el.remove(); });
                 }
                 reindexPlaceholders(rowIndex);
                 updateProgress();
@@ -960,8 +1037,11 @@
                 } else {
                     container.style.display = 'none';
                     container.querySelectorAll('.placeholder-field, .nested-field').forEach(function(f) { f.value = ''; f.style.display = ''; });
+                    container.querySelectorAll('.ey-sub-required').forEach(function(el) { el.remove(); });
                 }
                 reindexPlaceholders(rowIndex);
+                var tr = this.closest('tr[data-row-index]');
+                if (isActive) setTimeout(function() { injectSubRequiredStars(tr); }, 0);
                 updateProgress();
             });
         });
@@ -977,9 +1057,12 @@
                 if (show) {
                     container.style.display = 'block';
                     container.querySelectorAll('.append-field').forEach(function(f) { f.disabled = false; });
+                    var tr = this.closest('tr[data-row-index]');
+                    setTimeout(function() { injectSubRequiredStars(tr); }, 0);
                 } else {
                     container.style.display = 'none';
                     container.querySelectorAll('.append-field').forEach(function(f) { f.disabled = true; f.value = ''; });
+                    container.querySelectorAll('.ey-sub-required').forEach(function(el) { el.remove(); });
                 }
                 updateProgress();
             });
@@ -1210,22 +1293,186 @@
         replaceVariablesInUI();
         evaluateParentDeps();
 
+        // Inject "* Required" on always-visible sub-fields in mandatory rows
+        document.querySelectorAll('tr[data-mandatory="1"]').forEach(function(tr) {
+            injectSubRequiredStars(tr);
+        });
+
+        // Toast notification system
+        function showToast(title, message, actionText, actionCallback) {
+            var container = document.getElementById('toastContainer');
+            var toast = document.createElement('div');
+            toast.className = 'ey-toast';
+            toast.style.position = 'relative';
+            toast.innerHTML =
+                '<svg class="ey-toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                    '<circle cx="12" cy="12" r="10"></circle>' +
+                    '<line x1="12" y1="8" x2="12" y2="12"></line>' +
+                    '<line x1="12" y1="16" x2="12.01" y2="16"></line>' +
+                '</svg>' +
+                '<div class="ey-toast-body">' +
+                    '<div class="ey-toast-title">' + title + '</div>' +
+                    '<div class="ey-toast-message">' + message + '</div>' +
+                    (actionText ? '<button class="ey-toast-action">' + actionText +
+                        ' <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>' +
+                    '</button>' : '') +
+                '</div>' +
+                '<button class="ey-toast-close" aria-label="Dismiss">' +
+                    '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                        '<line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line>' +
+                    '</svg>' +
+                '</button>' +
+                '<div class="ey-toast-progress"><div class="ey-toast-progress-bar"></div></div>';
+
+            container.appendChild(toast);
+
+            var dismissToast = function() {
+                if (toast.parentNode) {
+                    toast.classList.add('ey-toast-exit');
+                    setTimeout(function() { if (toast.parentNode) toast.remove(); }, 250);
+                }
+            };
+
+            toast.querySelector('.ey-toast-close').addEventListener('click', dismissToast);
+
+            if (actionText && actionCallback) {
+                toast.querySelector('.ey-toast-action').addEventListener('click', function() {
+                    actionCallback();
+                    dismissToast();
+                });
+            }
+
+            setTimeout(dismissToast, 5500);
+        }
+
+        var errIconSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+
+        function wrapFieldWithErrIcon(field) {
+            if (field.parentNode.classList && field.parentNode.classList.contains('ey-field-err-wrap')) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'ey-field-err-wrap';
+            var icon = document.createElement('span');
+            icon.className = 'ey-field-err-icon';
+            icon.title = 'This field is mandatory';
+            icon.innerHTML = errIconSvg;
+            field.parentNode.insertBefore(wrap, field);
+            wrap.appendChild(icon);
+            wrap.appendChild(field);
+        }
+
+        function unwrapFieldErrIcon(field) {
+            var wrap = field.parentNode;
+            if (!wrap || !wrap.classList || !wrap.classList.contains('ey-field-err-wrap')) return;
+            wrap.parentNode.insertBefore(field, wrap);
+            wrap.remove();
+        }
+
+        function addSubRequiredLabels(tr) {
+            tr.querySelectorAll('textarea:not(:disabled), select:not(:disabled)').forEach(function(sf) {
+                if (sf.name && sf.name.indexOf('.UserAnswer') !== -1) return;
+                if (sf.type === 'hidden') return;
+                var container = sf.closest('div') || sf.parentNode;
+                if (container.querySelector('.ey-sub-required')) return;
+                var label = document.createElement('div');
+                label.className = 'ey-sub-required';
+                label.innerHTML = '<span class="ey-required-star">*</span> Required';
+                container.insertBefore(label, sf);
+            });
+        }
+
         // Re-index all placeholder fields and validate before submit
         document.getElementById('sowGenerateForm').addEventListener('submit', function(e) {
+            // Clear previous validation states
+            document.querySelectorAll('tr.mandatory-missing').forEach(function(tr) { tr.classList.remove('mandatory-missing'); });
+            document.querySelectorAll('.ey-field-err-wrap').forEach(function(wrap) {
+                var field = wrap.querySelector('textarea, select');
+                if (field) { wrap.parentNode.insertBefore(field, wrap); }
+                wrap.remove();
+            });
+            document.querySelectorAll('.ey-sub-required').forEach(function(el) { el.remove(); });
+            document.getElementById('validationBanner').classList.remove('active');
+
+            // Validate mandatory questions
+            var missingMandatory = [];
+            document.querySelectorAll('tr[data-row-index][data-mandatory="1"]').forEach(function(tr) {
+                if (tr.style.display === 'none') return;
+                var idx = tr.dataset.rowIndex;
+                var mainEl = document.querySelector('[name="rows[' + idx + '].UserAnswer"]');
+                var hasAnswer = mainEl && (mainEl.value || '').trim() !== '';
+                var emptyFields = [];
+
+                if (!hasAnswer) {
+                    emptyFields.push(mainEl);
+                } else {
+                    // Check sub-fields
+                    tr.querySelectorAll('textarea:not(:disabled), select:not(:disabled)').forEach(function(sf) {
+                        if (sf.name && sf.name.indexOf('.UserAnswer') !== -1) return;
+                        if (sf.type === 'hidden') return;
+                        if ((sf.value || '').trim() === '') emptyFields.push(sf);
+                    });
+                }
+
+                if (emptyFields.length > 0) {
+                    missingMandatory.push(tr);
+                    tr.classList.add('mandatory-missing');
+                    // Add "* Required" labels to all sub-fields if expanded
+                    if (hasAnswer) addSubRequiredLabels(tr);
+                    // Wrap each empty field with exclamation icon
+                    emptyFields.forEach(function(f) { if (f) wrapFieldWithErrIcon(f); });
+                }
+            });
+            if (missingMandatory.length > 0) {
+                e.preventDefault();
+
+                // Show validation banner above the table
+                var banner = document.getElementById('validationBanner');
+                var bannerTitle = document.getElementById('validationBannerTitle');
+                var bannerText = document.getElementById('validationBannerText');
+                bannerTitle.textContent = missingMandatory.length + ' mandatory ' + (missingMandatory.length === 1 ? 'field requires' : 'fields require') + ' your response';
+                bannerText.textContent = 'Please complete all mandatory fields (marked with *) before generating the SOW document. The first incomplete field has been highlighted below.';
+                banner.classList.add('active');
+                banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                // Show toast notification
+                var firstMissing = missingMandatory[0];
+                var clauseNum = firstMissing.querySelector('td:nth-child(2)') ? firstMissing.querySelector('td:nth-child(2)').textContent.trim() : '';
+                var rowNum = firstMissing.querySelector('td:first-child') ? firstMissing.querySelector('td:first-child').textContent.trim().replace('*', '') : '';
+                showToast(
+                    'Validation Failed',
+                    missingMandatory.length + ' mandatory ' + (missingMandatory.length === 1 ? 'question' : 'questions') + ' remaining. First: Row ' + rowNum + (clauseNum ? ' (Clause ' + clauseNum + ')' : ''),
+                    'Go to field',
+                    function() {
+                        firstMissing.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        var answerEl = firstMissing.querySelector('.sow-answer');
+                        if (answerEl) setTimeout(function() { answerEl.focus(); }, 400);
+                    }
+                );
+                return;
+            }
+
             // Validate custom replacement fields: all enabled custom-required textareas must be filled
             var emptyFields = [];
             document.querySelectorAll('textarea.custom-required:not(:disabled)').forEach(function(ta) {
                 if (!ta.value.trim()) {
                     emptyFields.push(ta);
-                    ta.style.borderColor = 'red';
+                    ta.style.borderColor = 'var(--accent-error-primary)';
                 } else {
                     ta.style.borderColor = '';
                 }
             });
             if (emptyFields.length > 0) {
                 e.preventDefault();
-                emptyFields[0].focus();
-                alert('Please fill in all required custom replacement fields.');
+                emptyFields[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(function() { emptyFields[0].focus(); }, 400);
+                showToast(
+                    'Incomplete Fields',
+                    emptyFields.length + ' custom replacement ' + (emptyFields.length === 1 ? 'field is' : 'fields are') + ' still empty.',
+                    'Go to field',
+                    function() {
+                        emptyFields[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        setTimeout(function() { emptyFields[0].focus(); }, 400);
+                    }
+                );
                 return;
             }
 

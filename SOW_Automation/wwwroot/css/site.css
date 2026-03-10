@@ -1203,6 +1203,259 @@ button:focus-visible {
 
 .ph-mark.ph-active { background-color: var(--color-yellow-400); }
 
+/* ============================================================
+   Mandatory Field Validation
+   ============================================================ */
+
+.ey-required-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-regular);
+  color: var(--text-colors-default-tertiary);
+  margin-bottom: 6px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.ey-required-star {
+  color: var(--accent-error-primary);
+  font-size: 15px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+/* Error state: row highlight on mandatory-missing */
+tr.mandatory-missing > td:first-child {
+  border-left: 3px solid var(--accent-error-primary);
+}
+
+tr.mandatory-missing > td {
+  background-color: var(--accent-error-extra-a) !important;
+  transition: background-color 0.3s ease;
+}
+
+tr.mandatory-missing .sow-answer,
+.ey-field-err-wrap textarea,
+.ey-field-err-wrap select {
+  border: 1.5px solid var(--accent-error-primary) !important;
+  box-shadow: 0 0 0 1px rgba(198,40,40,0.12);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Per-field exclamation icon to the left of unfilled mandatory fields */
+.ey-field-err-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  animation: ey-slideDown 0.2s ease;
+}
+
+.ey-field-err-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  margin-top: 6px;
+  color: var(--accent-error-primary);
+}
+
+.ey-field-err-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Sub-field required star */
+.ey-sub-required {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: var(--font-weight-regular);
+  color: var(--text-colors-default-tertiary);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.ey-sub-required .ey-required-star {
+  font-size: 13px;
+}
+
+/* Validation Banner */
+.ey-validation-banner {
+  display: none;
+  align-items: flex-start;
+  gap: var(--spacing-12);
+  background: var(--accent-error-extra-a);
+  border: 1px solid var(--accent-error-primary);
+  border-left: 4px solid var(--accent-error-primary);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-16) var(--spacing-20);
+  margin-bottom: var(--spacing-16);
+  animation: ey-slideDown 0.3s ease;
+}
+
+.ey-validation-banner.active { display: flex; }
+
+.ey-validation-banner-icon {
+  flex-shrink: 0;
+  width: 20px; height: 20px;
+  color: var(--accent-error-primary);
+  margin-top: 1px;
+}
+
+.ey-validation-banner-content {
+  flex: 1;
+}
+
+.ey-validation-banner-title {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  color: var(--accent-error-primary);
+  margin-bottom: var(--spacing-4);
+}
+
+.ey-validation-banner-text {
+  font-size: var(--font-size-13);
+  color: var(--text-colors-default-secondary);
+  line-height: var(--line-height-20);
+}
+
+.ey-validation-banner-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-colors-default-tertiary);
+  padding: 2px;
+  transition: color 0.15s ease;
+}
+
+.ey-validation-banner-close:hover { color: var(--text-colors-default-primary); }
+
+/* Toast Notification */
+.ey-toast-container {
+  position: fixed;
+  top: var(--spacing-20);
+  right: var(--spacing-20);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  pointer-events: none;
+}
+
+.ey-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-12);
+  min-width: 360px;
+  max-width: 440px;
+  background: var(--bg-colors-default-primary);
+  border: 1px solid var(--border-colors-default-primary);
+  border-left: 4px solid var(--accent-error-primary);
+  border-radius: var(--border-radius-sm);
+  padding: var(--spacing-16) var(--spacing-20);
+  box-shadow: 0 8px 32px rgba(46,46,56,0.14), 0 2px 8px rgba(46,46,56,0.06);
+  pointer-events: auto;
+  animation: ey-toastIn 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+.ey-toast.ey-toast-exit {
+  animation: ey-toastOut 0.25s ease forwards;
+}
+
+.ey-toast-icon {
+  flex-shrink: 0;
+  width: 20px; height: 20px;
+  color: var(--accent-error-primary);
+  margin-top: 1px;
+}
+
+.ey-toast-body { flex: 1; }
+
+.ey-toast-title {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-colors-default-primary);
+  margin-bottom: 2px;
+}
+
+.ey-toast-message {
+  font-size: var(--font-size-13);
+  color: var(--text-colors-default-secondary);
+  line-height: var(--line-height-18);
+}
+
+.ey-toast-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--spacing-8);
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--accent-error-primary);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-family-primary);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.ey-toast-action:hover { opacity: 0.8; }
+
+.ey-toast-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-colors-default-tertiary);
+  padding: 2px;
+  transition: color 0.15s ease;
+}
+
+.ey-toast-close:hover { color: var(--text-colors-default-primary); }
+
+.ey-toast-progress {
+  position: absolute;
+  bottom: 0; left: 4px; right: 0;
+  height: 3px;
+  background: var(--accent-error-extra-a);
+  border-radius: 0 0 var(--border-radius-sm) 0;
+  overflow: hidden;
+}
+
+.ey-toast-progress-bar {
+  height: 100%;
+  background: var(--accent-error-primary);
+  animation: ey-toastProgress 5s linear forwards;
+}
+
+@keyframes ey-slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes ey-toastIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes ey-toastOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(40px); }
+}
+
+@keyframes ey-toastProgress {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
 .var-ref {
   font-weight: var(--font-weight-bold);
   color: var(--accent-info-primary);
