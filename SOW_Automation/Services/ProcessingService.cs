@@ -40,6 +40,7 @@ namespace SowAutomationTool.Services
                     Tips = row.Cell(7)?.GetString() ?? "",
                     VariableName = row.Cell(9)?.GetString()?.Trim() ?? "",
                     ParentClauses = row.Cell(10)?.GetString()?.Trim() ?? "",
+                    IsMandatory = row.Cell(11)?.GetString()?.Trim() == "1",
                     UserAnswer = ""
                 };
 
