@@ -49,6 +49,16 @@ builder.Services.AddScoped<UserAuthorizationService>();
 
 var app = builder.Build();
 
+// Ensure the DB directory exists (Azure persistent storage: /home/data)
+var connStr = app.Configuration.GetConnectionString("UsersDb") ?? "";
+var dbPath = connStr.Replace("Data Source=", "").Trim();
+if (!string.IsNullOrEmpty(dbPath))
+{
+    var dbDir = Path.GetDirectoryName(dbPath);
+    if (!string.IsNullOrEmpty(dbDir))
+        Directory.CreateDirectory(dbDir);
+}
+
 // Seed DB
 using (var scope = app.Services.CreateScope())
 {

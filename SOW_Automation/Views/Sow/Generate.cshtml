@@ -46,7 +46,7 @@
     }
 
     var visibleRows = Model?.Where(r => IsRowVisible(r)).ToList() ?? new List<SowAutomationTool.Models.SowUiRow>();
-    var total = visibleRows.Count;
+    var total = Model?.Count ?? 0;
     var answered = visibleRows.Count(r => !string.IsNullOrWhiteSpace(r.UserAnswer));
     var remaining = total - answered;
     var pct = total > 0 ? (int)Math.Round((double)answered / total * 100) : 0;

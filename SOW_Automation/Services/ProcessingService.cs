@@ -133,6 +133,11 @@ namespace SowAutomationTool.Services
                 if (!string.IsNullOrWhiteSpace(combined))
                 {
                     results.Add(combined);
+                    // Also add the full paragraph text so matching works when the
+                    // Excel SowText spans both highlighted and non-highlighted runs
+                    var fullParaText = para.InnerText?.Trim() ?? "";
+                    if (!string.IsNullOrWhiteSpace(fullParaText) && fullParaText != combined)
+                        results.Add(fullParaText);
                     _logger.LogInformation("HighlightedText: {Text}",
                         combined.Length > 150 ? combined.Substring(0, 150) + "..." : combined);
                 }
@@ -197,6 +202,7 @@ namespace SowAutomationTool.Services
                 {
                     if (row.RowNumber == 0) continue;
                     if (row.IsSectionMarker) continue;
+                    if (matched.Contains(row)) continue;
 
                     var sowNorm = Normalize(row.SowText);
                     if (string.IsNullOrWhiteSpace(sowNorm))
@@ -205,8 +211,58 @@ namespace SowAutomationTool.Services
                     if (highlightNorm.Contains(sowNorm) ||
                         sowNorm.Contains(highlightNorm))
                     {
-                        if (!matched.Contains(row))
-                            matched.Add(row);
+                        matched.Add(row);
+                    }
+                }
+            }
+
+            // Second pass: match unmatched rows using partial overlap
+            // (handles cases where only a portion of the SowText is highlighted in Word,
+            //  or the highlighted block is a larger paragraph containing the SowText content)
+            foreach (var row in excelRows)
+            {
+                if (row.RowNumber == 0) continue;
+                if (row.IsSectionMarker) continue;
+                if (matched.Contains(row)) continue;
+
+                var sowNorm = Normalize(row.SowText);
+                if (string.IsNullOrWhiteSpace(sowNorm)) continue;
+
+                // Extract significant words (skip short/common words and bracket content)
+                var sowWords = sowNorm
+                    .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                    .Where(w => w.Length > 3 && !w.StartsWith("[") && !w.StartsWith("{"))
+                    .ToArray();
+
+                // Build a 40+ char substring from the middle of the SowText for robust matching
+                var sowMid = sowNorm.Length > 80
+                    ? sowNorm.Substring(20, 60)
+                    : (sowNorm.Length > 40 ? sowNorm.Substring(10, Math.Min(50, sowNorm.Length - 10)) : sowNorm);
+
+                foreach (var highlight in highlightedList)
+                {
+                    var highlightNorm = Normalize(highlight);
+                    if (string.IsNullOrWhiteSpace(highlightNorm)) continue;
+
+                    // Strategy: check if a meaningful substring of the SowText exists in the highlight
+                    if (sowMid.Length >= 20 && highlightNorm.Contains(sowMid))
+                    {
+                        matched.Add(row);
+                        _logger.LogInformation("PartialMatch: Row={Row}, Clause={Clause} matched via mid-substring",
+                            row.RowNumber, row.ClauseNumber);
+                        break;
+                    }
+
+                    // Strategy: check if a meaningful substring of the highlight exists in the SowText
+                    var hlMid = highlightNorm.Length > 80
+                        ? highlightNorm.Substring(20, 60)
+                        : (highlightNorm.Length > 40 ? highlightNorm.Substring(10, Math.Min(50, highlightNorm.Length - 10)) : highlightNorm);
+                    if (hlMid.Length >= 20 && sowNorm.Contains(hlMid))
+                    {
+                        matched.Add(row);
+                        _logger.LogInformation("PartialMatch: Row={Row}, Clause={Clause} matched via highlight mid-substring",
+                            row.RowNumber, row.ClauseNumber);
+                        break;
                     }
                 }
             }
@@ -327,6 +383,11 @@ namespace SowAutomationTool.Services
                             matchedRow.RowNumber, matchedRow.ClauseNumber, matchedRow.IsTableRow, inTable);
 
                         appliedRowIndices.Add(matchedIndex);
+
+                        // Skip modification for blue-shaded regions (reserved for manual review)
+                        if (runs.All(IsRunBlueShaded))
+                            continue;
+
                         ApplyAnswer(matchedRow, runs, regionText, para);
 
                         if (matchedRow.UserAnswer?.Trim().Equals("No", StringComparison.OrdinalIgnoreCase) == true)
@@ -355,8 +416,9 @@ namespace SowAutomationTool.Services
                 // Strip escape markers: *[text]* → [text]
                 RemoveEscapeMarkersFromDocument(body);
 
-                // Remove all remaining highlight formatting from the document
-                var remainingHighlightedRuns = body.Descendants<Run>().Where(IsRunHighlighted).ToList();
+                // Remove all remaining highlight formatting except blue shading
+                var remainingHighlightedRuns = body.Descendants<Run>()
+                    .Where(r => IsRunHighlighted(r) && !IsRunBlueShaded(r)).ToList();
                 RemoveHighlightFormattingFromRuns(remainingHighlightedRuns);
 
                 RemoveNoteToDraftFromDocument(body);
@@ -1006,6 +1068,48 @@ namespace SowAutomationTool.Services
             return false;
         }
 
+        private static bool IsRunBlueShaded(Run run)
+        {
+            var rPr = run.RunProperties;
+            if (rPr == null) return false;
+
+            foreach (var hl in rPr.Elements<Highlight>())
+            {
+                var val = hl.Val?.Value;
+                if (val == HighlightColorValues.Blue ||
+                    val == HighlightColorValues.DarkBlue ||
+                    val == HighlightColorValues.Cyan ||
+                    val == HighlightColorValues.DarkCyan)
+                    return true;
+            }
+
+            foreach (var shd in rPr.Elements<Shading>())
+            {
+                var fill = shd.Fill?.Value;
+                if (!string.IsNullOrEmpty(fill) && IsBlueColor(fill))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsBlueColor(string hexColor)
+        {
+            hexColor = hexColor.Trim().TrimStart('#').ToUpperInvariant();
+            if (hexColor == "AUTO" || hexColor == "FFFFFF" || hexColor.Length != 6)
+                return false;
+
+            if (!int.TryParse(hexColor.Substring(0, 2), System.Globalization.NumberStyles.HexNumber, null, out int r))
+                return false;
+            if (!int.TryParse(hexColor.Substring(2, 2), System.Globalization.NumberStyles.HexNumber, null, out int g))
+                return false;
+            if (!int.TryParse(hexColor.Substring(4, 2), System.Globalization.NumberStyles.HexNumber, null, out int b))
+                return false;
+
+            // Blue family: blue channel dominates red and green
+            return b > r && b > g && b >= 100;
+        }
+
         private static List<(List<Run> Runs, string Text)>
             GetHighlightedRegions(Paragraph para)
         {
@@ -1356,8 +1460,8 @@ namespace SowAutomationTool.Services
                 var fullText = string.Join("", runs.Select(r => r.InnerText));
                 if (string.IsNullOrEmpty(fullText)) continue;
 
-                bool changed = RemovePatternAcrossRuns(runs, noteToDraftPattern);
-                changed |= RemovePatternAcrossRuns(runs, optionalPattern);
+                bool changed = RemovePatternAcrossRunsPreserveBlue(runs, noteToDraftPattern);
+                changed |= RemovePatternAcrossRunsPreserveBlue(runs, optionalPattern);
 
                 if (!changed) continue;
 
@@ -1395,6 +1499,7 @@ namespace SowAutomationTool.Services
         {
             foreach (var run in body.Descendants<Run>().ToList())
             {
+                if (IsRunBlueShaded(run)) continue;
                 var textEl = run.GetFirstChild<Text>();
                 if (textEl == null) continue;
                 var original = textEl.Text;
@@ -1428,14 +1533,14 @@ namespace SowAutomationTool.Services
                 var testText = Regex.Replace(fullText, @"\*\[[^\]]+\]\*", "");
                 if (!testText.Contains('[')) continue;
 
-                // Remove nested brackets first, then simple ones
+                // Remove nested brackets first, then simple ones (preserving blue-shaded content)
                 if (nestedPattern.IsMatch(testText))
-                    RemovePatternAcrossRuns(runs, nestedPattern);
+                    RemovePatternAcrossRunsPreserveBlue(runs, nestedPattern);
                 // Re-check after nested removal
                 fullText = string.Join("", runs.Select(r => r.InnerText));
                 testText = Regex.Replace(fullText, @"\*\[[^\]]+\]\*", "");
                 if (simplePattern.IsMatch(testText))
-                    RemovePatternAcrossRuns(runs, simplePattern);
+                    RemovePatternAcrossRunsPreserveBlue(runs, simplePattern);
             }
         }
 
@@ -1443,6 +1548,7 @@ namespace SowAutomationTool.Services
         {
             foreach (var run in body.Descendants<Run>().ToList())
             {
+                if (IsRunBlueShaded(run)) continue;
                 var textEl = run.GetFirstChild<Text>();
                 if (textEl == null) continue;
 
@@ -1601,6 +1707,69 @@ namespace SowAutomationTool.Services
                     textEl.Space = SpaceProcessingModeValues.Preserve;
                 }
             } while (found);
+
+            return anyRemoved;
+        }
+
+        /// <summary>
+        /// Blue-shading-aware version of RemovePatternAcrossRuns.
+        /// Skips any match that overlaps a blue-shaded run, preserving blue content.
+        /// </summary>
+        private static bool RemovePatternAcrossRunsPreserveBlue(List<Run> runs, Regex pattern)
+        {
+            bool anyRemoved = false;
+            bool progress;
+            do
+            {
+                progress = false;
+                var fullSb = new StringBuilder();
+                var runStarts = new List<int>();
+                foreach (var run in runs)
+                {
+                    runStarts.Add(fullSb.Length);
+                    fullSb.Append(run.InnerText);
+                }
+                var fullText = fullSb.ToString();
+
+                foreach (Match match in pattern.Matches(fullText))
+                {
+                    int matchStart = match.Index;
+                    int matchEnd = match.Index + match.Length;
+
+                    bool overlapsBlue = false;
+                    for (int ri = 0; ri < runs.Count; ri++)
+                    {
+                        int rStart = runStarts[ri];
+                        int rEnd = ri + 1 < runs.Count ? runStarts[ri + 1] : fullText.Length;
+                        if (rEnd <= matchStart || rStart >= matchEnd) continue;
+                        if (IsRunBlueShaded(runs[ri]))
+                        {
+                            overlapsBlue = true;
+                            break;
+                        }
+                    }
+
+                    if (overlapsBlue) continue;
+
+                    for (int ri = 0; ri < runs.Count; ri++)
+                    {
+                        int rStart = runStarts[ri];
+                        int rEnd = ri + 1 < runs.Count ? runStarts[ri + 1] : fullText.Length;
+                        if (rEnd <= matchStart || rStart >= matchEnd) continue;
+
+                        var textEl = runs[ri].GetFirstChild<Text>();
+                        if (textEl == null) continue;
+
+                        int localStart = Math.Max(0, matchStart - rStart);
+                        int localEnd = Math.Min(textEl.Text.Length, matchEnd - rStart);
+                        textEl.Text = textEl.Text.Substring(0, localStart) + textEl.Text.Substring(localEnd);
+                        textEl.Space = SpaceProcessingModeValues.Preserve;
+                    }
+                    progress = true;
+                    anyRemoved = true;
+                    break; // Restart since offsets changed
+                }
+            } while (progress);
 
             return anyRemoved;
         }

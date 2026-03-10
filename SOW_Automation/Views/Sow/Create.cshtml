@@ -756,8 +756,8 @@
             var answered = 0;
 
             document.querySelectorAll('tr[data-row-index]').forEach(function(tr) {
-                if (tr.style.display === 'none') return;
                 total++;
+                if (tr.style.display === 'none') return;
                 var idx = tr.dataset.rowIndex;
                 var el = document.querySelector('[name="rows[' + idx + '].UserAnswer"]');
                 if (el && (el.value || '').trim() !== '') {
@@ -777,10 +777,9 @@
             document.getElementById('progressBarFill').style.width = pct + '%';
             document.getElementById('progressPct').textContent = pct + '%';
 
-            // Update question type breakdown counts (only visible rows)
+            // Update question type breakdown counts (all rows)
             var qtYesNo = 0, qtYesNoUpdate = 0, qtText = 0;
             document.querySelectorAll('tr[data-row-index]').forEach(function(tr) {
-                if (tr.style.display === 'none') return;
                 var qt = tr.dataset.qtype;
                 if (qt === 'yesno') qtYesNo++;
                 else if (qt === 'yesno-update') qtYesNoUpdate++;
