@@ -24,7 +24,7 @@ jobs:
           dotnet-version: '10.x'
 
       - name: Build with dotnet
-        run: ls | dotnet build Sow_Automation.slnx
+        run: cd ./SOW_Automation/ && dotnet build Sow_Automation.slnx
 
       - name: dotnet publish
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
@@ -54,5 +54,6 @@ jobs:
           package: .
 
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_132312F274604C5D84A39F1DD1751B22 }}
+
 
 
